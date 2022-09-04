@@ -14,7 +14,7 @@ from configuration.AudioConfiguration import produire_audio_service
 from configuration.MinitelConfiguration import produire_minitel
 from configuration.UIConfiguration import produire_notificateur_evenement
 from service.AudioService import AudioService
-from service.JukeBox import JukeBox
+from service.JukeBoxService import JukeBoxService
 
 
 def my_config(binder):
@@ -33,4 +33,4 @@ if __name__ == '__main__':
     inject.configure(my_config)
 
     logging.info("Lancement du Jukebox Minitel")
-    JukeBox().demarrer()
+    JukeBoxService().demarrer()

@@ -5,32 +5,71 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 import logging
+from threading import Timer
 
-from minitel import Minitel
+import inject
+from minitel.Minitel import Minitel
 from minitel.ui.UI import UI
+from pyobservable import Observable
 
-from controleur import JukeBoxControleur
-
-TOUCHE_HAUT = [27, 91, 65]
-TOUCHE_BAS = [27, 91, 66]
+from modele.AudioModele import AudioModele
 
 
 class AudioWidget(UI):
+    TOUCHE_HAUT = [27, 91, 65]
+    TOUCHE_BAS = [27, 91, 66]
 
-    def __init__(self, minitel: Minitel, juke_box_controleur: JukeBoxControleur):
+    COLONNE = 40
+    LIGNE = 3
+
+    DELAI_SECONDE_EFFACEMENT = 4
+
+    @inject.autoparams()
+    def __init__(self, minitel: Minitel, audio_modele: AudioModele, notificateur_evenement: Observable):
         super().__init__(minitel, 1, 1, 1, 1, "noir")
-        self.__juke_box_controleur = juke_box_controleur
+        self.__minitel = minitel
+        self.__audio_modele = audio_modele
+        self.__effaceur = None
+        notificateur_evenement.bind(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, self.dessin)
+
+    def __efface(self):
+        for i in range(0, 20):
+            self.__minitel.position(AudioWidget.COLONNE, i + AudioWidget.LIGNE)
+            self.__minitel.couleur("noir", "noir")
+            self.__minitel.envoyer(" ")
+
+    def dessin(self, volume):
+        self.__minitel.curseur(False)
+        self.__minitel.effet(inversion=True)
+        int_volume = int((AudioModele.MAX_VOLUME - volume) / 5)
+        for i in range(0, int_volume):
+            self.__minitel.position(AudioWidget.COLONNE, i + AudioWidget.LIGNE)
+            self.__minitel.couleur("noir", "bleu")
+            self.__minitel.envoyer(" ")
+        for i in range(int_volume, 20):
+            self.__minitel.position(AudioWidget.COLONNE, i + AudioWidget.LIGNE)
+            self.__minitel.couleur("noir", "blanc")
+            self.__minitel.envoyer(" ")
+        self.__minitel.effet(inversion=False)
+
+        self.__demarrer_effacement_programme()
+
+    def __demarrer_effacement_programme(self):
+        if self.__effaceur is not None and self.__effaceur.is_alive():
+            self.__effaceur.cancel()
+        self.__effaceur = Timer(AudioWidget.DELAI_SECONDE_EFFACEMENT, self.__efface)
+        self.__effaceur.start()
 
     def gere_touche(self, sequence):
         touche = sequence.valeurs
         logging.debug(f"Touche appuyée: {touche}")
 
-        if touche == TOUCHE_HAUT:
-            self.__juke_box_controleur.action_augmenter_volume()
+        if touche == AudioWidget.TOUCHE_HAUT:
+            self.__audio_modele.augmenter_volume()
             return True
 
-        if touche == TOUCHE_BAS:
-            self.__juke_box_controleur.action_diminuer_volume()
+        if touche == AudioWidget.TOUCHE_BAS:
+            self.__audio_modele.diminuer_volume()
             return True
 
         return False

@@ -4,20 +4,21 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
+import inject
 from minitel.Minitel import Minitel
 from minitel.ui.ChampTexte import ChampTexte
 from minitel.ui.Label import Label
 
-from controleur import JukeBoxControleur
 from widget.AudioWidget import AudioWidget
 from widget.JukeBoxConteneur import JukeBoxConteneur
 
 
 class RechercheEcran:
 
-    def __init__(self, minitel: Minitel, juke_box_controleur: JukeBoxControleur):
+    @inject.autoparams()
+    def __init__(self, minitel: Minitel, audio_widget: AudioWidget):
         self.__minitel = minitel
-        self.__juke_box_controleur = juke_box_controleur
+        self.__audio_widget = audio_widget
 
     def afficher(self):
         conteneur = JukeBoxConteneur(self.__minitel)
@@ -34,7 +35,7 @@ class RechercheEcran:
         conteneur.ajoute(Label(self.__minitel, posx=9, posy=23, valeur="precedentes lectures →"))
         conteneur.ajoute(Label(self.__minitel, posx=32, posy=23, valeur="SOMMAIRE"))
 
-        conteneur.ajoute(AudioWidget(self.__minitel, self.__juke_box_controleur))
+        conteneur.ajoute(self.__audio_widget)
 
         conteneur.affiche()
         conteneur.executer()

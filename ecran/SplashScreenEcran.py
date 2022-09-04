@@ -4,6 +4,7 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
+import inject
 from PIL import Image
 from _queue import Empty
 from minitel.ImageMinitel import ImageMinitel
@@ -12,6 +13,7 @@ from minitel.Minitel import Minitel
 
 class SplashScreenEcran:
 
+    @inject.autoparams()
     def __init__(self, minitel: Minitel):
         self.__minitel = minitel
 

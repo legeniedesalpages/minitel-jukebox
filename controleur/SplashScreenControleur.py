@@ -5,19 +5,15 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 import inject
-from minitel.Minitel import Minitel
 
-from controleur.JukeBoxControleur import JukeBoxControleur
 from ecran.SplashScreenEcran import SplashScreenEcran
-from modele.AudioModele import AudioModele
 
 
-class SplashScreenControleur(JukeBoxControleur):
+class SplashScreenControleur:
 
     @inject.autoparams()
-    def __init__(self, minitel: Minitel, audio_modele: AudioModele):
-        super().__init__(audio_modele)
-        self.__splash_screen_ecran = SplashScreenEcran(minitel)
+    def __init__(self, spash_screen_ecran: SplashScreenEcran):
+        self.__splash_screen_ecran = spash_screen_ecran
 
     def afficher_splash_screen(self):
         self.__splash_screen_ecran.afficher()
