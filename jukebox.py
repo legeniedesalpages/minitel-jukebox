@@ -7,10 +7,12 @@ __version__ = "1.0.0"
 import logging
 
 import inject
-
 from minitel.Minitel import Minitel
+from pyobservable import Observable
+
 from configuration.AudioConfiguration import produire_audio_service
 from configuration.MinitelConfiguration import produire_minitel
+from configuration.UIConfiguration import produire_notificateur_evenement
 from service.AudioService import AudioService
 from service.JukeBox import JukeBox
 
@@ -18,6 +20,7 @@ from service.JukeBox import JukeBox
 def my_config(binder):
     logging.debug("Configuration de l'injecteur de dépendance")
     binder.bind(Minitel, produire_minitel())
+    binder.bind(Observable, produire_notificateur_evenement())
     binder.bind(AudioService, produire_audio_service())
 
 
