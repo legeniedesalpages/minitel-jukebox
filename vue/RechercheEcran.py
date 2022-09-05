@@ -8,17 +8,25 @@ import inject
 from minitel.Minitel import Minitel
 from minitel.ui.ChampTexte import ChampTexte
 from minitel.ui.Label import Label
+from pyobservable import Observable
 
-from widget.AudioWidget import AudioWidget
-from widget.JukeBoxConteneur import JukeBoxConteneur
+from controleur.RechercheControleur import RechercheControleur
+from modele.RechercheModele import RechercheModele
+from vue.composant.AudioComposant import AudioComposant
+from vue.composant.JukeBoxConteneur import JukeBoxConteneur
+from vue.composant.LecteurComposant import LecteurWidget
 
 
 class RechercheEcran:
 
     @inject.autoparams()
-    def __init__(self, minitel: Minitel, audio_widget: AudioWidget):
+    def __init__(self, minitel: Minitel, audio_widget: AudioComposant, lecteur_widget: LecteurWidget,
+                 recherche_controleur: RechercheControleur, notificateur_evenement: Observable):
         self.__minitel = minitel
         self.__audio_widget = audio_widget
+        self.__lecteur_widget = lecteur_widget
+        self.__recherche_controleur = recherche_controleur
+        notificateur_evenement.bind(RechercheModele.EVENEMENT_RECHERCHE_AFFICHAGE, self.afficher)
 
     def afficher(self):
         conteneur = JukeBoxConteneur(self.__minitel)
@@ -36,6 +44,7 @@ class RechercheEcran:
         conteneur.ajoute(Label(self.__minitel, posx=32, posy=23, valeur="SOMMAIRE"))
 
         conteneur.ajoute(self.__audio_widget)
+        conteneur.ajoute(self.__lecteur_widget)
 
         conteneur.affiche()
         conteneur.executer()

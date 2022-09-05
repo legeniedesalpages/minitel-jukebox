@@ -14,7 +14,7 @@ from configuration.AudioConfiguration import produire_audio_service
 from configuration.MinitelConfiguration import produire_minitel
 from configuration.UIConfiguration import produire_notificateur_evenement
 from service.AudioService import AudioService
-from service.JukeBoxService import JukeBoxService
+from controleur.JukeBoxControleur import JukeBoxService
 
 
 def my_config(binder):

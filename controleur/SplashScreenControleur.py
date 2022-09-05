@@ -6,7 +6,7 @@ __version__ = "1.0.0"
 
 import inject
 
-from ecran.SplashScreenEcran import SplashScreenEcran
+from vue.SplashScreenEcran import SplashScreenEcran
 
 
 class SplashScreenControleur:

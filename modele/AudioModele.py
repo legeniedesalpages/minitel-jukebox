@@ -22,7 +22,6 @@ class AudioModele:
     @inject.autoparams()
     def __init__(self, audio_service: AudioService, notificateur_evenement: Observable):
         self.__volume = 50
-        self.__mute = False
         self.__notificateur_evenement = notificateur_evenement
         self.__audio_service = audio_service
 
@@ -45,7 +44,4 @@ class AudioModele:
             self.__notificateur_evenement.notify(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, nouveau_volume)
         else:
             logging.debug("Volume déjà au minimum")
-        return self.__volume
-
-    def recuperer_volume(self):
         return self.__volume

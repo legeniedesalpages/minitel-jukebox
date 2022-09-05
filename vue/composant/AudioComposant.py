@@ -15,14 +15,14 @@ from pyobservable import Observable
 from modele.AudioModele import AudioModele
 
 
-class AudioWidget(UI):
-    TOUCHE_HAUT = [27, 91, 65]
-    TOUCHE_BAS = [27, 91, 66]
+class AudioComposant(UI):
+    __TOUCHE_HAUT = [27, 91, 65]
+    __TOUCHE_BAS = [27, 91, 66]
 
-    COLONNE = 40
-    LIGNE = 3
+    __COLONNE = 40
+    _LIGNE = 2
 
-    DELAI_SECONDE_EFFACEMENT = 4
+    __DELAI_SECONDE_EFFACEMENT = 4
 
     @inject.autoparams()
     def __init__(self, minitel: Minitel, audio_modele: AudioModele, notificateur_evenement: Observable):
@@ -34,7 +34,7 @@ class AudioWidget(UI):
 
     def __efface(self):
         for i in range(0, 20):
-            self.__minitel.position(AudioWidget.COLONNE, i + AudioWidget.LIGNE)
+            self.__minitel.position(AudioComposant.__COLONNE, i + AudioComposant._LIGNE)
             self.__minitel.couleur("noir", "noir")
             self.__minitel.envoyer(" ")
 
@@ -43,11 +43,11 @@ class AudioWidget(UI):
         self.__minitel.effet(inversion=True)
         int_volume = int((AudioModele.MAX_VOLUME - volume) / 5)
         for i in range(0, int_volume):
-            self.__minitel.position(AudioWidget.COLONNE, i + AudioWidget.LIGNE)
+            self.__minitel.position(AudioComposant.__COLONNE, i + AudioComposant._LIGNE)
             self.__minitel.couleur("noir", "bleu")
             self.__minitel.envoyer(" ")
         for i in range(int_volume, 20):
-            self.__minitel.position(AudioWidget.COLONNE, i + AudioWidget.LIGNE)
+            self.__minitel.position(AudioComposant.__COLONNE, i + AudioComposant._LIGNE)
             self.__minitel.couleur("noir", "blanc")
             self.__minitel.envoyer(" ")
         self.__minitel.effet(inversion=False)
@@ -57,18 +57,18 @@ class AudioWidget(UI):
     def __demarrer_effacement_programme(self):
         if self.__effaceur is not None and self.__effaceur.is_alive():
             self.__effaceur.cancel()
-        self.__effaceur = Timer(AudioWidget.DELAI_SECONDE_EFFACEMENT, self.__efface)
+        self.__effaceur = Timer(AudioComposant.__DELAI_SECONDE_EFFACEMENT, self.__efface)
         self.__effaceur.start()
 
     def gere_touche(self, sequence):
         touche = sequence.valeurs
         logging.debug(f"Touche appuyée: {touche}")
 
-        if touche == AudioWidget.TOUCHE_HAUT:
+        if touche == AudioComposant.__TOUCHE_HAUT:
             self.__audio_modele.augmenter_volume()
             return True
 
-        if touche == AudioWidget.TOUCHE_BAS:
+        if touche == AudioComposant.__TOUCHE_BAS:
             self.__audio_modele.diminuer_volume()
             return True
 

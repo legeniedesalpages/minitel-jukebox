@@ -6,17 +6,18 @@ __version__ = "1.0.0"
 
 import inject
 
-from controleur.JukeBoxControleur import JukeBoxControleur
-from ecran.RechercheEcran import RechercheEcran
-from modele.AudioModele import AudioModele
+from controleur.ComposantControleur import ComposantControleur
+from modele.RechercheModele import RechercheModele
 
 
-class RechercheControleur(JukeBoxControleur):
+class RechercheControleur:
 
     @inject.autoparams()
-    def __init__(self, recherche_ecran: RechercheEcran, audio_modele: AudioModele):
-        super().__init__(audio_modele)
-        self.__recherche_ecran = recherche_ecran
+    def __init__(self, recherche_modele: RechercheModele, composant_controleur: ComposantControleur):
+        # public
+        self.composant_controleur = composant_controleur
+        # privé
+        self.__recherche_modele = recherche_modele
 
     def afficher_ecran_recherche(self):
-        self.__recherche_ecran.afficher()
+        self.__recherche_modele.affichage_ecran_recherche()
