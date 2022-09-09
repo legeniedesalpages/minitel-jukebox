@@ -20,5 +20,7 @@ def produire_minitel() -> Minitel:
     minitel.curseur(False)
     minitel.semigraphique(False)
     minitel.efface('vraimenttout')
-    logging.info(f"Création du minitel, vitesse => {minitel.vitesse}")
+
+    logging.info(f"Création du minitel terminé, vitesse => {minitel.vitesse}")
+
     return minitel

@@ -41,6 +41,7 @@ class AudioModele:
         if nouveau_volume >= AudioModele.MIN_VOLUME:
             logging.info(f"Diminution du volume: {nouveau_volume}")
             self.__volume = nouveau_volume
+            self.__audio_service.definir_volume(nouveau_volume)
             self.__notificateur_evenement.notify(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, nouveau_volume)
         else:
             logging.debug("Volume déjà au minimum")

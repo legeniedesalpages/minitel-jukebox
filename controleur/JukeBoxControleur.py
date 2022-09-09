@@ -8,24 +8,22 @@ import logging
 
 import inject
 
-from controleur.RechercheControleur import RechercheControleur
-from controleur.SplashScreenControleur import SplashScreenControleur
 from vue.RechercheEcran import RechercheEcran
+from vue.SplashScreenEcran import SplashScreenEcran
 
 
 class JukeBoxService:
 
     @inject.autoparams()
-    def __init__(self, splash_screen_controleur: SplashScreenControleur, recherche_controleur: RechercheControleur, recherche_ecran: RechercheEcran):
+    def __init__(self, spash_screen_ecran: SplashScreenEcran, recherche_ecran: RechercheEcran):
         logging.info("Initialisation du JukeBox")
-        self.__splash_screen_controleur = splash_screen_controleur
-        self.__recherche_controleur = recherche_controleur
+        self.__spash_screen_ecran = spash_screen_ecran
         self.__recherche_ecran = recherche_ecran
 
     def demarrer(self):
         logging.info(f"Démarrage du JukeBox")
-        self.__splash_screen_controleur.afficher_splash_screen()
+        self.__spash_screen_ecran.afficher()
 
         while True:
-            self.__recherche_controleur.afficher_ecran_recherche()
-
+            logging.info(f"Affichage de l'écran de recherche")
+            self.__recherche_ecran.afficher()

@@ -12,7 +12,7 @@ from minitel.Minitel import Minitel
 from minitel.ui.UI import UI
 from pyobservable import Observable
 
-from modele.AudioModele import AudioModele
+from modele.composant.AudioModele import AudioModele
 
 
 class AudioComposant(UI):
@@ -20,7 +20,7 @@ class AudioComposant(UI):
     __TOUCHE_BAS = [27, 91, 66]
 
     __COLONNE = 40
-    _LIGNE = 2
+    _LIGNE = 1
 
     __DELAI_SECONDE_EFFACEMENT = 4
 
@@ -33,6 +33,7 @@ class AudioComposant(UI):
         notificateur_evenement.bind(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, self.dessin)
 
     def __efface(self):
+        self.__minitel.curseur(False)
         for i in range(0, 20):
             self.__minitel.position(AudioComposant.__COLONNE, i + AudioComposant._LIGNE)
             self.__minitel.couleur("noir", "noir")

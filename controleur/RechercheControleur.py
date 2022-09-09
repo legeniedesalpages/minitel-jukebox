@@ -4,20 +4,20 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
+import logging
+
 import inject
 
-from controleur.ComposantControleur import ComposantControleur
 from modele.RechercheModele import RechercheModele
 
 
 class RechercheControleur:
 
     @inject.autoparams()
-    def __init__(self, recherche_modele: RechercheModele, composant_controleur: ComposantControleur):
-        # public
-        self.composant_controleur = composant_controleur
+    def __init__(self, recherche_modele: RechercheModele):
         # privé
         self.__recherche_modele = recherche_modele
 
-    def afficher_ecran_recherche(self):
-        self.__recherche_modele.affichage_ecran_recherche()
+    def lancer_recherche(self, chanson_a_chercher):
+        logging.info(f"Lancement de la recherche pour: {chanson_a_chercher}")
+        self.__recherche_modele.lancer_recherche(chanson_a_chercher)

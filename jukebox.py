@@ -13,8 +13,8 @@ from pyobservable import Observable
 from configuration.AudioConfiguration import produire_audio_service
 from configuration.MinitelConfiguration import produire_minitel
 from configuration.UIConfiguration import produire_notificateur_evenement
-from service.AudioService import AudioService
 from controleur.JukeBoxControleur import JukeBoxService
+from service.AudioService import AudioService
 
 
 def my_config(binder):
@@ -34,3 +34,4 @@ if __name__ == '__main__':
 
     logging.info("Lancement du Jukebox Minitel")
     JukeBoxService().demarrer()
+    logging.info("Arret du Jukebox Minitel")

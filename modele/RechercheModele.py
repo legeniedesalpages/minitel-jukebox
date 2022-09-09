@@ -7,13 +7,15 @@ __version__ = "1.0.0"
 import inject
 from pyobservable import Observable
 
+from service.LecteurService import LecteurService
+
 
 class RechercheModele:
-    EVENEMENT_RECHERCHE_AFFICHAGE = "AffichageRecherche"
 
     @inject.autoparams()
-    def __init__(self, notificateur_evenement: Observable):
+    def __init__(self, lecteur_service: LecteurService, notificateur_evenement: Observable):
         self.__notificateur_evenement = notificateur_evenement
+        self.__lecteur_service = lecteur_service
 
-    def affichage_ecran_recherche(self):
-        self.__notificateur_evenement.notify(RechercheModele.EVENEMENT_RECHERCHE_AFFICHAGE)
+    def lancer_recherche(self, chanson_a_chercher):
+        self.__lecteur_service.rechercher_chanson(chanson_a_chercher)
