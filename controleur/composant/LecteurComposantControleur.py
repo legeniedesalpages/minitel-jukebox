@@ -28,9 +28,9 @@ class LecteurComposantControleur:
         logging.debug("Mise en pause ou reprise")
         self.__lecteur_modele.pause_ou_reprendre()
 
-    def action_lire_chanson(self):
-        logging.debug("Lire chanson")
-        liste_chanson = self.__chanson_service.rechercher_chanson("mon reve bleu", 1)
+    def action_lire_chanson(self, nom_chanson):
+        logging.debug(f"Lire chanson {nom_chanson}")
+        liste_chanson = self.__chanson_service.rechercher_chanson(nom_chanson, 1)
         self.__lecteur_modele.lire_chanson(liste_chanson[0])
 
     def action_chanson_suivante(self):

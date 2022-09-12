@@ -18,7 +18,6 @@ def produire_minitel() -> Minitel:
     minitel.configurer_clavier(etendu=True, curseur=False, minuscule=True)
     minitel.echo(False)
     minitel.curseur(False)
-    minitel.semigraphique(False)
     minitel.efface('vraimenttout')
 
     logging.info(f"Création du minitel terminé, vitesse => {minitel.vitesse}")

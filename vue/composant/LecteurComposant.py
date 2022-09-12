@@ -16,7 +16,6 @@ from modele.composant.LecteurModele import LecteurModele, EvenementLecteurModele
 
 
 class LecteurComposant(UI):
-    __TOUCHE_ENVOI = [19, 65]
     __TOUCHE_RETOUR = [19, 66]
     __TOUCHE_SUITE = [19, 72]
     __TOUCHE_REPETITION = [19, 67]
@@ -99,10 +98,6 @@ class LecteurComposant(UI):
 
         if touche == LecteurComposant.__TOUCHE_ANNULATION:
             self.__composant_controleur.action_pause_ou_reprendre()
-            return True
-
-        if touche == LecteurComposant.__TOUCHE_ENVOI:
-            self.__composant_controleur.action_lire_chanson()
             return True
 
         if touche == LecteurComposant.__TOUCHE_SUITE:

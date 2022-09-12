@@ -9,14 +9,12 @@ import logging
 import inject
 
 from modele.composant.AudioModele import AudioModele
-from modele.composant.LecteurModele import LecteurModele
-from service.ChansonService import ChansonService
 
 
 class AudioComposantControleur:
 
     @inject.autoparams()
-    def __init__(self, audio_modele: AudioModele, lecteur_modele: LecteurModele, chanson_service: ChansonService):
+    def __init__(self, audio_modele: AudioModele):
         logging.debug("Initialisation Audio composant Contrôleur")
         self.__audio_modele = audio_modele
 
