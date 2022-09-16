@@ -6,24 +6,34 @@ __version__ = "1.0.0"
 
 import logging
 
-import inject
+from configuration.GenerateurRecherche import GenerateurRecherche
+from modele.JukeBoxModele import JukeBoxModele, TypeRecherche, EvenementSortieEcran
+from vue.EcranDemarrageVue import EcranDemarrageVue
+from vue.EcranFinVue import EcranFinVue
+from vue.EcranVisualisationChanson import EcranVisualisationChanson
 
-from vue.RechercheEcran import RechercheEcran
-from vue.SplashScreenEcran import SplashScreenEcran
 
+class JukeBoxControleur:
 
-class JukeBoxService:
-
-    @inject.autoparams()
-    def __init__(self, spash_screen_ecran: SplashScreenEcran, recherche_ecran: RechercheEcran):
-        logging.info("Initialisation du JukeBox")
-        self.__spash_screen_ecran = spash_screen_ecran
-        self.__recherche_ecran = recherche_ecran
+    def __init__(self):
+        logging.debug("Initialisation du JukeBox")
+        self.__generateur_recherche = GenerateurRecherche()
 
     def demarrer(self):
         logging.info(f"Démarrage du JukeBox")
-        self.__spash_screen_ecran.afficher()
+        EcranDemarrageVue().afficher()
 
-        while True:
-            logging.info(f"Affichage de l'écran de recherche")
-            self.__recherche_ecran.afficher()
+        juke_box_modele = JukeBoxModele(TypeRecherche.YOUTUBE)
+
+        evenement_sortie_ecran = EvenementSortieEcran.AFFICHER_RECHERCHE
+        while evenement_sortie_ecran is not EvenementSortieEcran.ARRETER_APPLICATION:
+
+            while evenement_sortie_ecran == EvenementSortieEcran.AFFICHER_RECHERCHE:
+                controleur_recherche = self.__generateur_recherche.generer(juke_box_modele)
+                evenement_sortie_ecran = controleur_recherche.afficher_ecran_recherche()
+
+            if evenement_sortie_ecran == EvenementSortieEcran.VISUALISER_CHANSON:
+                ecran_visualisation = EcranVisualisationChanson()
+                evenement_sortie_ecran = ecran_visualisation.afficher()
+
+        EcranFinVue().afficher()

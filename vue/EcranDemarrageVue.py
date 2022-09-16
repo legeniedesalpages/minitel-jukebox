@@ -10,19 +10,21 @@ from _queue import Empty
 from minitel.ImageMinitel import ImageMinitel
 from minitel.Minitel import Minitel
 
+from vue.EcranInterface import EcranInterface
 
-class SplashScreenEcran:
+
+class EcranDemarrageVue(EcranInterface):
 
     @inject.autoparams()
     def __init__(self, minitel: Minitel):
         self.__minitel = minitel
 
     def afficher(self):
-        image = Image.open("ressources/splash.jpg")
-        image = image.resize((65, 65), Image.ANTIALIAS)
-        image_minitel = ImageMinitel(self.__minitel)
-        image_minitel.importer(image)
-        image_minitel.envoyer(4, 1)
+        # image = Image.open("ressources/splash.jpg")
+        # image = image.resize((65, 65), Image.ANTIALIAS)
+        # image_minitel = ImageMinitel(self.__minitel)
+        # image_minitel.importer(image)
+        # image_minitel.envoyer(4, 1)
 
         self.__minitel.position(5, 23)
         self.__minitel.taille(largeur=2, hauteur=2)
@@ -30,7 +32,7 @@ class SplashScreenEcran:
         self.__minitel.envoyer('Minitel JukeBox')
 
         try:
-            self.__minitel.recevoir_sequence(attente=5)
+            self.__minitel.recevoir_sequence(attente=1)
         except Empty:
             pass
 
