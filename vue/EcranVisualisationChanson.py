@@ -7,7 +7,6 @@ __version__ = "1.0.0"
 import logging
 
 import inject
-from _queue import Empty
 from minitel.Minitel import Minitel
 
 from modele.JukeBoxModele import EvenementSortieEcran
@@ -23,10 +22,7 @@ class EcranVisualisationChanson(EcranInterface):
         self.__minitel.position(10, 10)
         self.__minitel.envoyer("Chanson...")
 
-        try:
-            self.__minitel.recevoir_sequence(bloque=True, attente=None)
-        except Empty:
-            pass
+        self.__minitel.recevoir_sequence(bloque=True, attente=None)
 
         logging.info("Ferme la visualisation de la chanson")
         self.__minitel.efface('vraimenttout')

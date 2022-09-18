@@ -16,6 +16,7 @@ class TypeRecherche(Enum):
 
 
 class EvenementSortieEcran(Enum):
+    PAS_DE_SORTIE = auto()
     AFFICHER_RECHERCHE = auto()
     VISUALISER_CHANSON = auto()
     ARRETER_APPLICATION = auto()

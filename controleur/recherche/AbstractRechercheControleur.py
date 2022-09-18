@@ -31,8 +31,6 @@ class AbstractRechercheControleur:
         self.__juke_box_modele.changer_recherche()
         return EvenementSortieEcran.AFFICHER_RECHERCHE
 
-    def arreter_application(self) -> EvenementSortieEcran:
+    @staticmethod
+    def arreter_application() -> EvenementSortieEcran:
         return EvenementSortieEcran.ARRETER_APPLICATION
-
-    def action_envoi(self) -> EvenementSortieEcran:
-        return EvenementSortieEcran.VISUALISER_CHANSON

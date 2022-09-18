@@ -4,16 +4,14 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
-from modele.JukeBoxModele import EvenementSortieEcran
 
+class InterfaceComposantVue:
 
-class EcranInterface:
-
-    def afficher(self) -> EvenementSortieEcran:
+    def afficher(self):
         pass
 
     def fermer(self):
         pass
 
-    def gerer_touche(self, touche) -> EvenementSortieEcran:
+    def gere_touche(self, touche) -> bool:
         pass

@@ -22,7 +22,7 @@ class EcranDemarrageVue(EcranInterface):
     def afficher(self):
         # image = Image.open("ressources/splash.jpg")
         # image = image.resize((65, 65), Image.ANTIALIAS)
-        # image_minitel = ImageMinitel(self.__minitel)
+        # image_minitel = ImageMinitel(self.__minitel, disjoint=False)
         # image_minitel.importer(image)
         # image_minitel.envoyer(4, 1)
 

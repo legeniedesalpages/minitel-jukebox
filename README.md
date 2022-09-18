@@ -6,6 +6,7 @@ Transformer un Minitel en chaine JukeBox
 
 sudo apt install vlc
 
+pip install aenum<br/>
 pip install inject<br/>
 pip install pafy<br/>
 pip install python-vlc<br/>

@@ -21,7 +21,11 @@ class RechercheSpotifyVue(AbstractEcranRecherche):
         self.__recherche_modele = recherche_modele
 
     def afficher(self) -> EvenementSortieEcran:
+        super().afficher()
         self._minitel.position(1, 1)
         self._minitel.envoyer('Recherche dans les services Spotify')
 
-        return super().afficher()
+        return super().gerer_boucle()
+
+    def fermer(self):
+        super().fermer()
