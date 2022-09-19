@@ -9,93 +9,115 @@ from threading import Timer
 
 import inject
 from minitel.Minitel import Minitel
-from minitel.constantes import ESC
+from minitel.constantes import HAUT, BAS
+from minitel.ui.Conteneur import Conteneur
+from minitel.ui.UI import UI
 from pyobservable import Observable
 
-from configuration.MinitelConfiguration import CaracteresMinitel
 from controleur.composant.AudioComposantControleur import AudioComposantControleur
 from modele.composant.AudioModele import AudioModele
-from service.MinitelConstante import TOUCHE_FLECHE_HAUT, TOUCHE_FLECHE_BAS
-from vue.composant.InterfaceComposantVue import InterfaceComposantVue
+from service.minitel.MinitelConfiguration import CaracteresMinitel
+from service.minitel.MinitelExtension import MinitelExtension
 
 
-class AudioComposantVue(InterfaceComposantVue):
+class AudioComposantVue(UI):
     __COLONNE_AFFICHAGE_COMPOSANT = 40
-    _LIGNE_AFFICHAGE_COMPOSANT = 2
+    __LIGNE_AFFICHAGE_COMPOSANT = 2
+    __COULEUR = "jaune"
     __DELAI_EFFACEMENT_EN_SECONDES = 2
 
-    @inject.autoparams()
-    def __init__(self, minitel: Minitel, audio_composant_controleur: AudioComposantControleur,
-                 audio_modele: AudioModele, notificateur_evenement: Observable):
-        self.__minitel = minitel
-        self.__audio_composant_controleur = audio_composant_controleur
-        self.__audio_modele = audio_modele
-        self.__effaceur = None
-        self.__notificateur_evenement = notificateur_evenement
+    __minitel_extension = inject.attr(MinitelExtension)
+    __audio_composant_controleur = inject.attr(AudioComposantControleur)
+    __audio_modele = inject.attr(AudioModele)
+    __notificateur_evenement = inject.attr(Observable)
+    __thread_effaceur: Timer
 
-    def afficher(self):
+    def __init__(self, minitel: Minitel, conteneur: Conteneur):
+        super().__init__(
+            minitel=minitel,
+            posx=AudioComposantVue.__COLONNE_AFFICHAGE_COMPOSANT,
+            posy=AudioComposantVue.__LIGNE_AFFICHAGE_COMPOSANT,
+            largeur=1,
+            hauteur=20,
+            couleur=AudioComposantVue.__COULEUR
+        )
+        self.__conteneur_hote = conteneur
+
+    def affiche(self):
         logging.debug("Affichage du composant de volume : on affiche rien au démarrage")
-        self.__notificateur_evenement.bind(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, self.dessin)
+        self.__notificateur_evenement.bind(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, self._dessin)
 
-    def fermer(self):
-        self.__notificateur_evenement.unbind(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, self.dessin)
+    def efface(self):
+        self.__notificateur_evenement.unbind(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, self._dessin)
+        try:
+            self.__thread_effaceur.cancel()
+        except AttributeError:
+            # l'effaceur n'a jamais été initialisé : cas du composant jamais affiché
+            pass
+        self.__efface()
 
-    def dessin(self, volume):
-        logging.debug(f"volume:{volume}")
-        int_volume = int((AudioModele.MAX_VOLUME - volume) / 5)
-        col = AudioComposantVue.__COLONNE_AFFICHAGE_COMPOSANT
-        ligne = AudioComposantVue._LIGNE_AFFICHAGE_COMPOSANT
+    def gere_touche(self, sequence):
 
-        self.__minitel.curseur(False)
-        self.__minitel.couleur("bleu", "noir")
-        self.__minitel.envoyer([ESC, 0x28, 0x20, 0x42])
-
-        self.__minitel.position(col, ligne)
-        if volume == AudioModele.MAX_VOLUME:
-            self.__minitel.envoyer(CaracteresMinitel.BARRE_HAUT_PLEIN.caractere)
-        else:
-            self.__minitel.envoyer(CaracteresMinitel.BARRE_HAUT_VIDE.caractere)
-            for i in range(int_volume, 19):
-                self.__minitel.position(col, i + ligne)
-                self.__minitel.envoyer(CaracteresMinitel.BARRE_MILIEU_PLEIN.caractere)
-
-        for i in range(1, int_volume):
-            self.__minitel.position(col, i + ligne)
-            self.__minitel.envoyer(CaracteresMinitel.BARRE_MILIEU_VIDE.caractere)
-
-        self.__minitel.position(col, ligne + 19)
-        if volume == AudioModele.MIN_VOLUME:
-            self.__minitel.envoyer(CaracteresMinitel.BARRE_BAS_VIDE.caractere)
-        else:
-            self.__minitel.envoyer(CaracteresMinitel.BARRE_BAS_PLEIN.caractere)
-
-        # TODO : repositionnement du curseur
-
-        self.__minitel.envoyer([ESC, 0x28, 0x40])
-        self.__demarrer_effacement_programme()
-
-    def __demarrer_effacement_programme(self):
-        if self.__effaceur is not None and self.__effaceur.is_alive():
-            self.__effaceur.cancel()
-        self.__effaceur = Timer(AudioComposantVue.__DELAI_EFFACEMENT_EN_SECONDES, self.__efface)
-        self.__effaceur.start()
-
-    def __efface(self):
-        self.__minitel.curseur(False)
-        for i in range(0, 20):
-            self.__minitel.position(AudioComposantVue.__COLONNE_AFFICHAGE_COMPOSANT,
-                                    i + AudioComposantVue._LIGNE_AFFICHAGE_COMPOSANT)
-            self.__minitel.couleur("noir", "noir")
-            self.__minitel.envoyer(" ")
-
-    def gere_touche(self, touche) -> bool:
-
-        if touche == TOUCHE_FLECHE_HAUT:
+        if sequence.egale(HAUT):
             self.__audio_composant_controleur.action_augmenter_volume()
             return True
 
-        if touche == TOUCHE_FLECHE_BAS:
+        if sequence.egale(BAS):
             self.__audio_composant_controleur.action_diminuer_volume()
             return True
 
         return False
+
+    def _dessin(self, volume):
+        logging.debug(f"Dessine le volume:{volume}")
+        int_volume = int((AudioModele.MAX_VOLUME - volume) / 5)
+
+        self.minitel.curseur(False)
+        self.__minitel_extension.demarrer_affichage_jeu_caractere_redefinit()
+
+        self.__minitel_extension.position_couleur(self.posx, self.posy, self.couleur)
+        if volume == AudioModele.MAX_VOLUME:
+            self.minitel.envoyer(CaracteresMinitel.BARRE_HAUT_PLEIN.caractere)
+        else:
+            self.minitel.envoyer(CaracteresMinitel.BARRE_HAUT_VIDE.caractere)
+
+        for i in range(1, 19):
+            self.__minitel_extension.position_couleur(self.posx, self.posy + i, self.couleur)
+            if i < int_volume:
+                self.minitel.envoyer(CaracteresMinitel.BARRE_MILIEU_VIDE.caractere)
+            else:
+                self.minitel.envoyer(CaracteresMinitel.BARRE_MILIEU_PLEIN.caractere)
+
+        self.__minitel_extension.position_couleur(self.posx, self.posy + 19, self.couleur)
+        if volume == AudioModele.MIN_VOLUME:
+            self.minitel.envoyer(CaracteresMinitel.BARRE_BAS_VIDE.caractere)
+        else:
+            self.minitel.envoyer(CaracteresMinitel.BARRE_BAS_PLEIN.caractere)
+
+        self.__minitel_extension.revenir_jeu_caractere_standard()
+        self.__replace_curseur()
+        self.__demarrer_effacement_programme()
+
+    def __replace_curseur(self):
+        element = self.__conteneur_hote.element_actif
+        if element is not None:
+            self.minitel.position(element.posx + element.curseur_x - element.decalage, element.posy)
+            self.minitel.curseur(True)
+
+    def __demarrer_effacement_programme(self):
+        try:
+            if self.__thread_effaceur.is_alive():
+                self.__thread_effaceur.cancel()
+        except AttributeError:
+            # l'effaceur n'a jamais été initialisé : cas du premier appel
+            pass
+        self.__thread_effaceur = Timer(AudioComposantVue.__DELAI_EFFACEMENT_EN_SECONDES, self.__efface)
+        self.__thread_effaceur.start()
+
+    def __efface(self):
+        self.minitel.curseur(False)
+        self.minitel.couleur("noir")
+        for i in range(0, 20):
+            self.minitel.position(self.posx, i + self.posy)
+            self.minitel.envoyer(" ")
+        self.__replace_curseur()

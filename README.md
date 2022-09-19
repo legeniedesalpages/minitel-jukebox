@@ -1,12 +1,12 @@
 # JubeBox Minitel
 
-Transformer un Minitel en chaine JukeBox
+Transformer un Minitel en JukeBox
 
 # Dépendances
 
 sudo apt install vlc
 
-pip install aenum<br/>
+pip install pyobservable
 pip install inject<br/>
 pip install pafy<br/>
 pip install python-vlc<br/>

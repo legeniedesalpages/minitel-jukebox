@@ -4,31 +4,7 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
-import logging
 from enum import Enum
-
-from minitel.Minitel import Minitel
-from minitel.constantes import PRO1, RESET
-
-
-def produire_minitel() -> Minitel:
-    minitel = Minitel("/dev/ttyUSB0")
-    minitel.deviner_vitesse()
-    minitel.identifier()
-    minitel.definir_vitesse(9600)
-    minitel.definir_mode("VIDEOTEX")
-    minitel.appeler([PRO1, RESET], 1)
-    minitel.configurer_clavier(etendu=True, curseur=False, minuscule=True)
-    minitel.echo(False)
-    minitel.curseur(False)
-    minitel.efface('vraimenttout')
-
-    for car in CaracteresMinitel:
-        minitel.redefinir(car.caractere, car.dessin)
-
-    logging.info(f"Création du minitel terminé, vitesse => {minitel.vitesse}")
-
-    return minitel
 
 
 class CaracteresMinitel(Enum):
@@ -43,19 +19,21 @@ class CaracteresMinitel(Enum):
         self.dessin = dessin
         self.caractere = caractere
 
-    BARRE_HAUT_VIDE = """01111111
+    BARRE_HAUT_VIDE = """
+        01111111
         01000001
         01000001
-        01000001
-        01000001
-        01000001
+        01001001
+        01011101
+        01001001
         01000001
         01000001
         01000001
         01000001
     """, "a"
 
-    BARRE_MILIEU_VIDE = """01000001
+    BARRE_MILIEU_VIDE = """
+            01000001
             01000001
             01000001
             01000001
@@ -67,31 +45,34 @@ class CaracteresMinitel(Enum):
             01000001
     """, "b"
 
-    BARRE_BAS_VIDE = """01000001
+    BARRE_BAS_VIDE = """
             01000001
             01000001
             01000001
             01000001
             01000001
+            01011101
             01000001
             01000001
             01000001
             01111111
     """, "c"
 
-    BARRE_HAUT_PLEIN = """01111111
+    BARRE_HAUT_PLEIN = """
+            01111111
             01000001
             01011101
-            01011101
-            01011101
-            01011101
+            01010101
+            01000001
+            01010101
             01011101
             01011101
             01011101
             01011101
     """, "d"
 
-    BARRE_MILIEU_PLEIN = """01011101
+    BARRE_MILIEU_PLEIN = """
+            01011101
             01011101
             01011101
             01011101
@@ -103,11 +84,12 @@ class CaracteresMinitel(Enum):
             01011101
     """, "e"
 
-    BARRE_BAS_PLEIN = """01011101
+    BARRE_BAS_PLEIN = """
             01011101
             01011101
             01011101
             01011101
+            01000001
             01011101
             01011101
             01011101

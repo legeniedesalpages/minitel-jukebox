@@ -4,28 +4,22 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
-import logging
+from minitel.ui.ChampTexte import ChampTexte
+from minitel.ui.Label import Label
 
-from controleur.recherche import RechercheYoutubeControleur
-from modele.JukeBoxModele import EvenementSortieEcran
-from modele.recherche.RechercheYoutubeModele import RechercheYoutubeModele
-from vue.recherche.AbstractEcranRecherche import AbstractEcranRecherche
+from controleur.recherche.AbstractRechercheControleur import AbstractRechercheControleur
+from modele.recherche.AbstractRechercheModele import AbstractRechercheModele
+from vue.bidule.Etiquette import Etiquette, Alignement
+from vue.recherche.AbstractRechercheVue import AbstractRechercheVue
 
 
-class RechercheSpotifyVue(AbstractEcranRecherche):
+class RechercheSpotifyVue(AbstractRechercheVue):
 
-    def __init__(self, recherche_controleur: RechercheYoutubeControleur, recherche_modele: RechercheYoutubeModele):
-        super().__init__(recherche_controleur)
-        logging.debug("Initialisation de la vue de la recherche Spotify")
-        self.__recherche_controleur = recherche_controleur
-        self.__recherche_modele = recherche_modele
+    def __init__(self, recherche_controleur: AbstractRechercheControleur, recherche_modele: AbstractRechercheModele):
+        super().__init__(recherche_controleur, recherche_modele)
 
-    def afficher(self) -> EvenementSortieEcran:
-        super().afficher()
-        self._minitel.position(1, 1)
-        self._minitel.envoyer('Recherche dans les services Spotify')
-
-        return super().gerer_boucle()
-
-    def fermer(self):
-        super().fermer()
+        self._conteneur.ajoute(
+            Etiquette.aligne(self._minitel, Alignement.CENTRE, 1, "Recherche dans les services ^Spotify^", "blanc"))
+        self._minitel_extension.separateur(2, "rouge")
+        self._conteneur.ajoute(Label(self._minitel, 1, 3, "Playlist:", "vert"))
+        self._conteneur.ajoute(ChampTexte(self._minitel, 11, 3, 28, 60))

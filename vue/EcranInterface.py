@@ -9,11 +9,11 @@ from modele.JukeBoxModele import EvenementSortieEcran
 
 class EcranInterface:
 
-    def afficher(self) -> EvenementSortieEcran:
+    def afficher(self):
         pass
 
     def fermer(self):
         pass
 
-    def gerer_touche(self, touche) -> EvenementSortieEcran:
+    def gerer_touche(self, sequence) -> EvenementSortieEcran:
         pass

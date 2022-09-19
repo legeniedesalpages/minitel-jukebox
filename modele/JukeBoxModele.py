@@ -25,7 +25,7 @@ class EvenementSortieEcran(Enum):
 class JukeBoxModele:
 
     def __init__(self, type_recherche: TypeRecherche):
-        logging.debug("Initialisation du modele de la recherche")
+        logging.debug("Initialisation du modele du JukeBox")
         self.type_recherche = type_recherche
 
     def changer_recherche(self):

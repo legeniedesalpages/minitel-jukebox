@@ -9,7 +9,7 @@ import logging
 import inject
 from pyobservable import Observable
 
-from service.AudioService import AudioService
+from service.audio.AudioService import AudioService
 
 
 class AudioModele:
@@ -31,9 +31,9 @@ class AudioModele:
             logging.info(f"Augmentation du volume: {nouveau_volume}")
             self.__volume = nouveau_volume
             self.__audio_service.definir_volume(nouveau_volume)
-            self.__notificateur_evenement.notify(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, nouveau_volume)
         else:
             logging.debug("Volume déjà au maximum")
+        self.__notificateur_evenement.notify(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, self.__volume)
         return self.__volume
 
     def diminuer_volume(self):
@@ -42,7 +42,7 @@ class AudioModele:
             logging.info(f"Diminution du volume: {nouveau_volume}")
             self.__volume = nouveau_volume
             self.__audio_service.definir_volume(nouveau_volume)
-            self.__notificateur_evenement.notify(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, nouveau_volume)
         else:
             logging.debug("Volume déjà au minimum")
+        self.__notificateur_evenement.notify(AudioModele.EVENEMENT_CHANGEMENT_VOLUME, self.__volume)
         return self.__volume

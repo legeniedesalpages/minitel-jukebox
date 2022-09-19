@@ -6,7 +6,7 @@ __version__ = "1.0.0"
 
 import logging
 
-from configuration.GenerateurRecherche import GenerateurRecherche
+from service.recherche.GenerateurRecherche import GenerateurRecherche
 from modele.JukeBoxModele import JukeBoxModele, TypeRecherche, EvenementSortieEcran
 from vue.EcranDemarrageVue import EcranDemarrageVue
 from vue.EcranFinVue import EcranFinVue
@@ -29,11 +29,15 @@ class JukeBoxControleur:
         while evenement_sortie_ecran is not EvenementSortieEcran.ARRETER_APPLICATION:
 
             while evenement_sortie_ecran == EvenementSortieEcran.AFFICHER_RECHERCHE:
+                logging.info(f"Afficher la recherche {juke_box_modele.type_recherche}")
                 controleur_recherche = self.__generateur_recherche.generer(juke_box_modele)
                 evenement_sortie_ecran = controleur_recherche.afficher_ecran_recherche()
 
             if evenement_sortie_ecran == EvenementSortieEcran.VISUALISER_CHANSON:
+                logging.info("Afficher la visualisation")
                 ecran_visualisation = EcranVisualisationChanson()
                 evenement_sortie_ecran = ecran_visualisation.afficher()
+
+            logging.info(f"Evenement de sortie: {evenement_sortie_ecran}")
 
         EcranFinVue().afficher()

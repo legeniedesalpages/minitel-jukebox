@@ -4,10 +4,11 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
-import logging
+from modele.JukeBoxModele import EvenementSortieEcran
 
 
-class RechercheYoutubeModele:
+class AbstractRechercheModele:
+    evenement_sortie: EvenementSortieEcran
 
     def __init__(self):
-        logging.debug(f"Initialisation du modele de la recherche Youtube")
+        self.evenement_sortie = EvenementSortieEcran.PAS_DE_SORTIE

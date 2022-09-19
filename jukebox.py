@@ -10,16 +10,19 @@ import inject
 from minitel.Minitel import Minitel
 from pyobservable import Observable
 
-from configuration.AudioConfiguration import produire_audio_service
 from configuration.EvenementConfiguration import produire_notificateur_evenement
-from configuration.MinitelConfiguration import produire_minitel
 from controleur.JukeBoxControleur import JukeBoxControleur
-from service.AudioService import AudioService
+from service.audio.AudioConfiguration import produire_audio_service
+from service.audio.AudioService import AudioService
+from service.minitel.MinitelConfiguration import produire_minitel, produire_minitel_extension
+from service.minitel.MinitelExtension import MinitelExtension
 
 
 def my_config(binder):
     logging.debug("Configuration de l'injecteur de dépendance")
-    binder.bind(Minitel, produire_minitel())
+    minitel = produire_minitel()
+    binder.bind(Minitel, minitel)
+    binder.bind(MinitelExtension, produire_minitel_extension(minitel))
     binder.bind(AudioService, produire_audio_service())
     binder.bind(Observable, produire_notificateur_evenement())
 

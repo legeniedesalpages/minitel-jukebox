@@ -4,7 +4,7 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
-from service.AudioService import AudioService
+from service.audio.AudioService import AudioService
 
 
 def produire_audio_service() -> AudioService:
