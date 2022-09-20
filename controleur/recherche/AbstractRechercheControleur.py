@@ -45,3 +45,7 @@ class AbstractRechercheControleur:
 
     def resultat_recherche_precedent(self):
         self._recherche_modele.resultat_recherche_precedent()
+
+    def annuler_recherche(self):
+        logging.debug("Annule la recherche")
+        self._recherche_modele.annuler_recherche()

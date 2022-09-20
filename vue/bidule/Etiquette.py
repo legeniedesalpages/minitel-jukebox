@@ -23,8 +23,6 @@ class Etiquette(UI):
     __minitel = inject.attr(Minitel)
 
     def __init__(self, posx, posy, valeur: str, couleur_texte=None, alignement=Alignement.AUCUN):
-        self.activable = False
-
         len_valeur_brut = len(valeur.replace("^", ""))
         if alignement is Alignement.AUCUN:
             x = posx

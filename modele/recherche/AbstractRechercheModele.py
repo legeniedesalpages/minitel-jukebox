@@ -20,11 +20,14 @@ class MouvementSelection(Enum):
     PAGE = auto()
 
 
+class EvenementRechercheModele(Enum):
+    EVENEMENT_CHANGEMENT_RESULTAT = auto()
+    EVENEMENT_CHANGEMENT_SELECTION = auto()
+    EVENEMENT_ANNULATION_RECHERCHE = auto()
+
+
 class AbstractRechercheModele:
     __notificateur_evenement = inject.attr(Observable)
-
-    EVENEMENT_CHANGEMENT_RESULTAT = "EvenementChangementResultat"
-    EVENEMENT_CHANGEMENT_SELECTION = "EvenementChangementSelection"
 
     evenement_sortie: EvenementSortieEcran
     liste_resultat: List[Chanson]
@@ -36,16 +39,21 @@ class AbstractRechercheModele:
     def changer_liste_resultat(self, nouvelle_liste_resultat):
         self.liste_resultat = nouvelle_liste_resultat
         self.element_selectionne = 1
-        self.__notificateur_evenement.notify(AbstractRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT)
+        self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT)
 
     def resultat_recherche_suivant(self):
         if self.element_selectionne < len(self.liste_resultat):
             self.element_selectionne += 1
-            self.__notificateur_evenement.notify(AbstractRechercheModele.EVENEMENT_CHANGEMENT_SELECTION,
+            self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION,
                                                  MouvementSelection.DESCEND)
 
     def resultat_recherche_precedent(self):
         if self.element_selectionne > 1:
             self.element_selectionne -= 1
-            self.__notificateur_evenement.notify(AbstractRechercheModele.EVENEMENT_CHANGEMENT_SELECTION,
+            self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION,
                                                  MouvementSelection.MONTE)
+
+    def annuler_recherche(self):
+        self.liste_resultat = []
+        self.element_selectionne = 0
+        self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_ANNULATION_RECHERCHE)

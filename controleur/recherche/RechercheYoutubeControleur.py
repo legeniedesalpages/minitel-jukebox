@@ -20,5 +20,5 @@ class RechercheYoutubeControleur(AbstractRechercheControleur):
 
     def lancer_recherche(self, titre_chanson):
         logging.debug(f"Lancer la recherche {self.__chanson_service}")
-        liste_chanson_trouvee = self.__chanson_service.rechercher_chanson(str(titre_chanson), 5)
+        liste_chanson_trouvee = self.__chanson_service.rechercher_chanson(str(titre_chanson), 20)
         self._recherche_modele.changer_liste_resultat(liste_chanson_trouvee)

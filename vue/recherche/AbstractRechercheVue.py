@@ -63,12 +63,14 @@ class AbstractRechercheVue(EcranInterface):
             self._recherche_controleur.envoyer_lecture()
             return
 
-        if self._gerer_touche(sequence):
-            logging.debug("Touche gérée par l'écran")
-            return
-
+        # l'élément actif est prioritaire par rapport aux règles de l'écran lui-même
         if self._conteneur.element_actif is not None and self._conteneur.element_actif.gere_touche(sequence):
             logging.debug("Touche gérée par l'element actif")
+            return
+
+        # les règles de l'écran sont prioritaires par rapport aux élements autres que celui actif
+        if self._gerer_touche(sequence):
+            logging.debug("Touche gérée par l'écran")
             return
 
         for element in self._conteneur.elements:
