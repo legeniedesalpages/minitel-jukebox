@@ -14,6 +14,7 @@ from pyobservable import Observable
 
 from modele.recherche.AbstractRechercheModele import AbstractRechercheModele, MouvementSelection
 from service.minitel.MinitelExtension import MinitelExtension
+from vue.bidule.Etiquette import Etiquette, Alignement
 
 
 class ResultatRechercheComposant(UI):
@@ -49,6 +50,7 @@ class ResultatRechercheComposant(UI):
         self.__minitel.curseur(False)
 
         if mouvement_selection == MouvementSelection.PAGE:
+            Etiquette.aligne(Alignement.DROITE, 4, "Nombre résultats: 20").affiche()
             self.__minitel.position(1, 5)
             self.__minitel.couleur("rouge")
             self.__minitel.repeter("-", 40)
