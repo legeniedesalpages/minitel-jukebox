@@ -5,6 +5,7 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 from controleur.recherche.AbstractRechercheControleur import AbstractRechercheControleur
+from controleur.recherche.RechercheYoutubeControleur import RechercheYoutubeControleur
 from modele.JukeBoxModele import TypeRecherche, JukeBoxModele
 from modele.recherche.AbstractRechercheModele import AbstractRechercheModele
 from vue.recherche.RechercheSpotifyVue import RechercheSpotifyVue
@@ -24,7 +25,7 @@ class GenerateurRecherche:
     @staticmethod
     def __fabriquer_recherche_youtube(juke_box_modele: JukeBoxModele) -> AbstractRechercheControleur:
         recherche_modele = AbstractRechercheModele()
-        recherche_controleur = AbstractRechercheControleur(juke_box_modele, recherche_modele)
+        recherche_controleur = RechercheYoutubeControleur(juke_box_modele, recherche_modele)
         recherche_vue = RechercheYoutubeVue(recherche_controleur, recherche_modele)
         recherche_controleur.enregistrer_vue(recherche_vue)
         return recherche_controleur

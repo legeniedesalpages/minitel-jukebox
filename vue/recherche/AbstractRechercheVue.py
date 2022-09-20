@@ -25,8 +25,8 @@ class AbstractRechercheVue(EcranInterface):
     _conteneur: Conteneur
 
     def __init__(self, recherche_controleur: AbstractRechercheControleur, recherche_modele: AbstractRechercheModele):
-        self.__recherche_controleur = recherche_controleur
-        self.__recherche_youtube_modele = recherche_modele
+        self._recherche_controleur = recherche_controleur
+        self._recherche_modele = recherche_modele
         self._conteneur = Conteneur(self._minitel, 1, 1, 1, 1)
 
         self._conteneur.ajoute(AudioComposantVue(self._minitel, self._conteneur))
@@ -44,23 +44,23 @@ class AbstractRechercheVue(EcranInterface):
 
     def __gerer_boucle(self):
 
-        while self.__recherche_youtube_modele.evenement_sortie is EvenementSortieEcran.PAS_DE_SORTIE:
+        while self._recherche_modele.evenement_sortie is EvenementSortieEcran.PAS_DE_SORTIE:
             sequence = self._minitel.recevoir_sequence(bloque=True, attente=None)
             self.__gerer_touche(sequence)
 
-    def _gerer_touche(self, sequence):
+    def _gerer_touche(self, sequence) -> bool:
         pass
 
     def __gerer_touche(self, sequence):
 
         if sequence.egale(SOMMAIRE):
             logging.debug("Touche gérée par la vue générique")
-            self.__recherche_controleur.changer_type_recherche()
+            self._recherche_controleur.changer_type_recherche()
             return
 
         if sequence.egale(ENVOI):
             logging.debug("Touche gérée par la vue générique")
-            self.__recherche_controleur.envoyer_chanson()
+            self._recherche_controleur.envoyer_lecture()
             return
 
         if self._gerer_touche(sequence):

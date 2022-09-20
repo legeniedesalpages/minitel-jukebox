@@ -4,22 +4,70 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
+import logging
+
+import inject
+from minitel.constantes import ENTREE, HAUT, BAS
 from minitel.ui.ChampTexte import ChampTexte
 from minitel.ui.Label import Label
+from pyobservable import Observable
 
-from controleur.recherche.AbstractRechercheControleur import AbstractRechercheControleur
+from controleur.recherche.RechercheYoutubeControleur import RechercheYoutubeControleur
 from modele.recherche.AbstractRechercheModele import AbstractRechercheModele
 from vue.bidule.Etiquette import Etiquette, Alignement
+from vue.composant.ResultatRechercheComposant import ResultatRechercheComposant
 from vue.recherche.AbstractRechercheVue import AbstractRechercheVue
 
 
 class RechercheYoutubeVue(AbstractRechercheVue):
+    __notificateur_evenement = inject.attr(Observable)
+    __resultat_recherche: ResultatRechercheComposant
 
-    def __init__(self, recherche_controleur: AbstractRechercheControleur, recherche_modele: AbstractRechercheModele):
+    def __init__(self, recherche_controleur: RechercheYoutubeControleur, recherche_modele: AbstractRechercheModele):
         super().__init__(recherche_controleur, recherche_modele)
 
-        self._conteneur.ajoute(
-            Etiquette.aligne(self._minitel, Alignement.CENTRE, 1, "Recherche dans les services ^Youtube^", "blanc"))
+        titre = "Recherche dans les services ^Youtube^"
+        self._conteneur.ajoute(Etiquette.aligne(Alignement.CENTRE, 1, titre, "blanc"))
         self._minitel_extension.separateur(2, "rouge")
         self._conteneur.ajoute(Label(self._minitel, 1, 3, "Chanson:", "vert"))
-        self._conteneur.ajoute(ChampTexte(self._minitel, 10, 3, 29, 60))
+        self.__champ_saisie = ChampTexte(self._minitel, 10, 3, 29, 60)
+        self.__champ_saisie.valeur = "cabrel"
+        self._conteneur.ajoute(self.__champ_saisie)
+        self._conteneur.ajoute(Etiquette.aligne(Alignement.DROITE, 23, "Lancer la recherche ^ENTREE^"))
+        self._conteneur.ajoute(Etiquette.aligne(Alignement.DROITE, 24, "Lancer la chanson ^ENVOI^"))
+
+    def afficher(self):
+        self.__notificateur_evenement.bind(AbstractRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT,
+                                           self._afficher_liste_resultat)
+        super(RechercheYoutubeVue, self).afficher()
+
+    def fermer(self):
+        super(RechercheYoutubeVue, self).fermer()
+        self.__notificateur_evenement.unbind(AbstractRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT,
+                                             self._afficher_liste_resultat)
+
+    def _afficher_liste_resultat(self):
+        logging.debug("Affiche la liste des resultat")
+        try:
+            if self.__resultat_recherche is not None:
+                self.__resultat_recherche.efface()
+        except AttributeError:
+            pass
+
+        self.__resultat_recherche = ResultatRechercheComposant(self._conteneur, self._recherche_modele)
+        self._conteneur.ajoute(self.__resultat_recherche)
+        self.__resultat_recherche.affiche()
+
+    def _gerer_touche(self, sequence):
+
+        if sequence.egale(ENTREE):
+            self._recherche_controleur.lancer_recherche(self.__champ_saisie.valeur)
+            return True
+
+        if sequence.egale(BAS):
+            self._recherche_controleur.resultat_recherche_suivant()
+            return True
+
+        if sequence.egale(HAUT):
+            self._recherche_controleur.resultat_recherche_precedent()
+            return True

@@ -34,4 +34,6 @@ def produire_minitel() -> Minitel:
 
 
 def produire_minitel_extension(minitel: Minitel) -> MinitelExtension:
-    return MinitelExtension(minitel)
+    minitel_extension = MinitelExtension(minitel)
+    minitel_extension.revenir_jeu_caractere_standard()
+    return minitel_extension

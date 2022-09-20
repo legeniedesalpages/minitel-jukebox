@@ -13,20 +13,20 @@ from service.audio.AudioService import AudioService
 
 
 class AudioModele:
-    EVENEMENT_CHANGEMENT_VOLUME = "ChangementVolume"
+    EVENEMENT_CHANGEMENT_VOLUME = "EvenementChangementVolume"
 
-    INCREMENT_VOLUME = 5
+    __INCREMENT_VOLUME = 5
     MAX_VOLUME = 100
     MIN_VOLUME = 0
 
     @inject.autoparams()
     def __init__(self, audio_service: AudioService, notificateur_evenement: Observable):
-        self.__volume = 50
         self.__notificateur_evenement = notificateur_evenement
         self.__audio_service = audio_service
+        self.__volume = self.__audio_service.obtenir_volume()
 
     def augmenter_volume(self):
-        nouveau_volume = self.__volume + AudioModele.INCREMENT_VOLUME
+        nouveau_volume = self.__volume + AudioModele.__INCREMENT_VOLUME
         if nouveau_volume <= AudioModele.MAX_VOLUME:
             logging.info(f"Augmentation du volume: {nouveau_volume}")
             self.__volume = nouveau_volume
@@ -37,7 +37,7 @@ class AudioModele:
         return self.__volume
 
     def diminuer_volume(self):
-        nouveau_volume = self.__volume - AudioModele.INCREMENT_VOLUME
+        nouveau_volume = self.__volume - AudioModele.__INCREMENT_VOLUME
         if nouveau_volume >= AudioModele.MIN_VOLUME:
             logging.info(f"Diminution du volume: {nouveau_volume}")
             self.__volume = nouveau_volume

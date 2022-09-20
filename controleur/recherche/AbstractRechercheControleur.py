@@ -17,7 +17,7 @@ class AbstractRechercheControleur:
     def __init__(self, juke_box_modele: JukeBoxModele, recherche_modele: AbstractRechercheModele):
         logging.debug("Initialisation du controleur Youtube")
         self.__juke_box_modele = juke_box_modele
-        self.__recherche_modele = recherche_modele
+        self._recherche_modele = recherche_modele
 
     def enregistrer_vue(self, ecran_recherche_interface):
         self.__ecran_recherche_interface = ecran_recherche_interface
@@ -27,15 +27,21 @@ class AbstractRechercheControleur:
         # afficher() est bloquant
         self.__ecran_recherche_interface.fermer()
 
-        return self.__recherche_modele.evenement_sortie
+        return self._recherche_modele.evenement_sortie
 
     def changer_type_recherche(self):
         logging.debug("Changement du type de recherche")
         self.__juke_box_modele.changer_recherche()
-        self.__recherche_modele.evenement_sortie = EvenementSortieEcran.AFFICHER_RECHERCHE
+        self._recherche_modele.evenement_sortie = EvenementSortieEcran.AFFICHER_RECHERCHE
 
-    def envoyer_chanson(self):
-        self.__recherche_modele.evenement_sortie = EvenementSortieEcran.VISUALISER_CHANSON
+    def envoyer_lecture(self):
+        self._recherche_modele.evenement_sortie = EvenementSortieEcran.VISUALISER_CHANSON
 
     def arreter_application(self):
-        self.__recherche_modele.evenement_sortie = EvenementSortieEcran.ARRETER_APPLICATION
+        self._recherche_modele.evenement_sortie = EvenementSortieEcran.ARRETER_APPLICATION
+
+    def resultat_recherche_suivant(self):
+        self._recherche_modele.resultat_recherche_suivant()
+
+    def resultat_recherche_precedent(self):
+        self._recherche_modele.resultat_recherche_precedent()

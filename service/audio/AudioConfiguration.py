@@ -8,4 +8,4 @@ from service.audio.AudioService import AudioService
 
 
 def produire_audio_service() -> AudioService:
-    return AudioService(50)
+    return AudioService()

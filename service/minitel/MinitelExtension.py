@@ -16,12 +16,12 @@ class MinitelExtension:
     def demarrer_affichage_jeu_caractere_redefinit(self):
         self.__minitel.envoyer([ESC, 0x28, 0x20, 0x42])
 
+    def revenir_jeu_caractere_standard(self):
+        self.__minitel.envoyer([ESC, 0x28, 0x40])
+
     def position_couleur(self, posx, posy, couleur):
         self.__minitel.position(posx, posy)
         self.__minitel.couleur(couleur)
-
-    def revenir_jeu_caractere_standard(self):
-        self.__minitel.envoyer([ESC, 0x28, 0x40])
 
     def separateur(self, posy, couleur):
         self.__minitel.position(1, posy)

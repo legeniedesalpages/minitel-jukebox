@@ -19,7 +19,7 @@ class RechercheSpotifyVue(AbstractRechercheVue):
         super().__init__(recherche_controleur, recherche_modele)
 
         self._conteneur.ajoute(
-            Etiquette.aligne(self._minitel, Alignement.CENTRE, 1, "Recherche dans les services ^Spotify^", "blanc"))
+            Etiquette.aligne(Alignement.CENTRE, 1, "Recherche dans les services ^Spotify^", "blanc"))
         self._minitel_extension.separateur(2, "rouge")
         self._conteneur.ajoute(Label(self._minitel, 1, 3, "Playlist:", "vert"))
         self._conteneur.ajoute(ChampTexte(self._minitel, 11, 3, 28, 60))
