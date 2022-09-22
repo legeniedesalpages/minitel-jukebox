@@ -5,12 +5,12 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 import logging
+from enum import Enum
 
 import inject
 import math
 from minitel.Minitel import Minitel
-from minitel.constantes import BAS, HAUT
-from minitel.ui.Conteneur import Conteneur
+from minitel.constantes import BAS, HAUT, SUITE, RETOUR
 from minitel.ui.UI import UI
 from pyobservable import Observable
 
@@ -18,122 +18,158 @@ from controleur.recherche.AbstractRechercheControleur import AbstractRechercheCo
 from modele.recherche.AbstractRechercheModele import AbstractRechercheModele, MouvementSelection, \
     EvenementRechercheModele
 from service.minitel.MinitelExtension import MinitelExtension
+from vue.bidule.Etiquette import Etiquette, Alignement
+
+
+class EtatLigne(Enum):
+    def __init__(self, couleur_cartouche, inversion_cartouche, couleur_ligne, inversion_ligne):
+        self.couleur_cartouche = couleur_cartouche
+        self.inversion_cartouche = inversion_cartouche
+        self.couleur_ligne = couleur_ligne
+        self.inversion_ligne = inversion_ligne
+
+    INACTIF = "rouge", False, "rouge", False
+    SELECTIONNE = "vert", True, "jaune", True
+    NORMAL = "bleu", True, "jaune", False
 
 
 class ResultatRechercheComposant(UI):
-    __LIGNE_AFFICHAGE_COMPOSANT = 4
-    __COULEUR = "blanc"
-
-    __minitel = inject.attr(Minitel)
     __minitel_extension = inject.attr(MinitelExtension)
     __notificateur_evenement = inject.attr(Observable)
 
-    def __init__(self, conteneur: Conteneur, recherche_modele: AbstractRechercheModele, recherche_controleur: AbstractRechercheControleur):
+    def __init__(self, minitel: Minitel, posy, taille_cartouche,
+                 recherche_modele: AbstractRechercheModele, recherche_controleur: AbstractRechercheControleur,
+                 formateur_cartouche, formateur_ligne
+                 ):
         super().__init__(
-            minitel=self.__minitel,
+            minitel=minitel,
             posx=1,
-            posy=ResultatRechercheComposant.__LIGNE_AFFICHAGE_COMPOSANT,
-            largeur=1,
-            hauteur=20,
-            couleur=ResultatRechercheComposant.__COULEUR
+            posy=posy,
+            largeur=39,  # la dernière colonne est réservée
+            hauteur=1 + 3 * 5 + 1,
+            couleur=None
         )
-        self.__conteneur_hote = conteneur
+        self.activable = True
+
         self.__recherche_modele = recherche_modele
         self.__recherche_controleur = recherche_controleur
-        self.__affiche = False
 
-    def affiche(self):
-        logging.debug("Affichage du composant de resultat de recherche: on affiche rien au démarrage")
-        self._dessin(MouvementSelection.PAGE)
-        self.__affiche = True
+        self.__formateur_cartouche = formateur_cartouche
+        self.__formateur_ligne = formateur_ligne
+
+        self._premier_affichage = True
+        self._taille_cartouche = taille_cartouche
+        self._taille_ligne = self.largeur - self._taille_cartouche - 1
+
+        self.__notificateur_evenement.bind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT, self._dessin)
         self.__notificateur_evenement.bind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION, self._dessin)
+        self.__notificateur_evenement.bind(EvenementRechercheModele.EVENEMENT_ANNULATION_RECHERCHE, self._annulation)
 
-    def efface(self):
-        logging.debug("Efface la précédente recherche")
-        if self.__affiche:
-            self.__notificateur_evenement.unbind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION, self._dessin)
-            self.__minitel.position(1, ResultatRechercheComposant.__LIGNE_AFFICHAGE_COMPOSANT)
-            self.__minitel.efface("finecran")
-            self.__affiche = False
+    def fermer(self):
+        self.__notificateur_evenement.unbind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT, self._dessin)
+        self.__notificateur_evenement.unbind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION, self._dessin)
+        self.__notificateur_evenement.unbind(EvenementRechercheModele.EVENEMENT_ANNULATION_RECHERCHE, self._annulation)
 
-    def _dessin(self, mouvement_selection: MouvementSelection):
-        logging.debug(
-            f"Dessin du composant dse résultat de recherche: {mouvement_selection}, {self.__recherche_modele.element_selectionne}")
-        self.__minitel.curseur(False)
+    def _annulation(self):
+        self._dessin(MouvementSelection.PAGE, est_actif=False)
+
+    def _dessin(self, mouvement_selection: MouvementSelection = MouvementSelection.PAGE, est_actif=True):
+        logging.debug(f"Dessin du composant des résultats de recherche: {mouvement_selection}")
+        self.minitel.curseur(False)
 
         if mouvement_selection == MouvementSelection.MONTE:
             compteur = self.__recherche_modele.element_selectionne - 1
             if compteur % 5 == 4:
                 self._dessin(MouvementSelection.PAGE)
             else:
-                self.__affichage_element(self.__recherche_modele.liste_resultat[compteur], compteur % 5 + 1, True)
-                self.__affichage_element(self.__recherche_modele.liste_resultat[compteur + 1], compteur % 5 + 2, False)
+                chanson = self.__recherche_modele.liste_resultat[compteur]
+                self.__affichage_bloc_ligne(chanson, compteur % 5, True, est_actif)
+                chanson = self.__recherche_modele.liste_resultat[compteur + 1]
+                self.__affichage_bloc_ligne(chanson, compteur % 5 + 1, False, est_actif)
 
         elif mouvement_selection == MouvementSelection.DESCEND:
             compteur = self.__recherche_modele.element_selectionne - 1
             if compteur % 5 == 0:
                 self._dessin(MouvementSelection.PAGE)
             else:
-                self.__affichage_element(self.__recherche_modele.liste_resultat[compteur], compteur % 5 + 1, True)
-                self.__affichage_element(self.__recherche_modele.liste_resultat[compteur - 1], compteur % 5, False)
+                chanson = self.__recherche_modele.liste_resultat[compteur]
+                self.__affichage_bloc_ligne(chanson, compteur % 5, True, est_actif)
+                chanson = self.__recherche_modele.liste_resultat[compteur - 1]
+                self.__affichage_bloc_ligne(chanson, compteur % 5 - 1, False, est_actif)
 
         elif mouvement_selection == MouvementSelection.PAGE:
-            self.__minitel.position(1, 5)
-            self.__minitel.couleur("rouge")
-            self.__minitel.repeter("-", 40)
+            self.minitel.position(1, self.posy)
+            self.__affichage_separateur()
 
+            page = math.floor((self.__recherche_modele.element_selectionne - 1) / 5)
             for compteur in range(0, 5):
-                page = math.floor((self.__recherche_modele.element_selectionne - 1) / 5)
+
                 index = page * 5 + compteur
                 if index < len(self.__recherche_modele.liste_resultat):
                     chanson = self.__recherche_modele.liste_resultat[index]
-                    inversion = (self.__recherche_modele.element_selectionne - 1) % 5 == compteur
-                    self.__affichage_element(chanson, compteur + 1, inversion)
+                    est_selectionne = (self.__recherche_modele.element_selectionne - 1) % 5 == compteur
+                    self.__affichage_bloc_ligne(chanson, compteur, est_selectionne, est_actif)
                 else:
-                    self.__affichage_element(None, compteur + 1, False)
+                    self.__affichage_bloc_ligne(None, compteur, False, est_actif)
 
-    def __affichage_element(self, chanson, compteur, inversion):
-        if chanson is not None and chanson.duree is not None:
-            if chanson.duree.count(":") == 0:
-                duree = chanson.duree.rjust(5, " ")[:5]
-            elif chanson.duree.count(":") == 1:
-                duree = chanson.duree.rjust(5, "0")[:5]
-            else:
-                duree = " >1h "
-        else:
-            duree = "     "
+                self.minitel.effet(inversion=False)
+                self.__affichage_separateur()
 
-        self.__minitel.position(1, 3 + compteur * 3)
-        if inversion:
-            self.__minitel.couleur("vert")
-        else:
-            self.__minitel.couleur("bleu")
-        self.__minitel.effet(inversion=True)
-        self.__minitel.envoyer(duree)
-        self.__minitel.couleur("jaune")
-        self.__minitel.effet(inversion=inversion)
-        if chanson is not None:
-            self.__minitel.envoyer(" " + chanson.titre[:33].ljust(34, " "))
-        else:
-            self.__minitel.repeter(" ", 39)
+            self.__affichage_resume(page)
+            self._premier_affichage = False
 
-        self.__minitel.position(1, 4 + compteur * 3)
-        if inversion:
-            self.__minitel.couleur("vert")
-        else:
-            self.__minitel.couleur("bleu")
-        self.__minitel.effet(inversion=True)
-        self.__minitel.envoyer(" ".rjust(5, " "))
-        self.__minitel.couleur("jaune")
-        self.__minitel.effet(inversion=inversion)
-        if chanson is not None:
-            self.__minitel.envoyer(" " + chanson.titre[33:66].ljust(34, " "))
-        else:
-            self.__minitel.repeter(" ", 39)
+    def __affichage_resume(self, page):
+        debut = page * 5 + 1
+        fin = page * 5 + 5
+        total = len(self.__recherche_modele.liste_resultat)
+        texte = f"  résultats {debut} à {fin if fin < total else total} sur {total} "
+        Etiquette.aligne(Alignement.DROITE, self.posy + 3 * 5 + 1, texte, "rouge").affiche()
 
-        self.__minitel.position(1, 5 + compteur * 3)
-        self.__minitel.couleur("rouge")
-        self.__minitel.repeter("-", 40)
+    def __affichage_bloc_ligne(self, chanson, rang_element, selectionne, actif):
+
+        texte_cartouche = self.__formateur_cartouche(chanson)
+
+        texte_ligne = self.__formateur_ligne(chanson)
+
+        etat_ligne = EtatLigne.INACTIF if not actif else EtatLigne.SELECTIONNE if selectionne else EtatLigne.NORMAL
+
+        self.minitel.position(1, 1 + self.posy + rang_element * 3)
+        self.__affichage_contenu_ligne(texte_cartouche, texte_ligne, etat_ligne)
+
+    def __affichage_contenu_ligne(self, texte_cartouche: str, texte_ligne: str, etat_ligne: EtatLigne):
+
+        taille_cartouche = self._taille_cartouche
+        self.minitel.couleur(etat_ligne.couleur_cartouche)
+        self.minitel.effet(inversion=etat_ligne.inversion_cartouche)
+        sequence = texte_cartouche[:taille_cartouche].strip().rjust(taille_cartouche, " ")
+        self.minitel.envoyer(sequence)
+
+        taille_ligne = self._taille_ligne
+        self.minitel.couleur(etat_ligne.couleur_ligne)
+        self.minitel.effet(inversion=etat_ligne.inversion_ligne)
+        sequence = " " + texte_ligne[:taille_ligne].strip().ljust(taille_ligne, " ")
+        self.minitel.envoyer(sequence)
+        self.minitel.effet(inversion=False)
+        self.minitel.envoyer(" ")
+
+        self.minitel.couleur(etat_ligne.couleur_cartouche)
+        self.minitel.effet(inversion=etat_ligne.inversion_cartouche)
+        sequence = texte_cartouche[taille_cartouche:taille_cartouche * 2].strip().rjust(taille_cartouche, " ")
+        self.minitel.envoyer(sequence)
+
+        self.minitel.couleur(etat_ligne.couleur_ligne)
+        self.minitel.effet(inversion=etat_ligne.inversion_ligne)
+        sequence = " " + texte_ligne[taille_ligne:taille_ligne * 2].strip().ljust(taille_ligne, " ")
+        self.minitel.envoyer(sequence)
+        self.minitel.effet(inversion=False)
+        self.minitel.envoyer(" ")
+
+    def __affichage_separateur(self):
+        if self._premier_affichage:
+            self.__minitel_extension.demarrer_affichage_jeu_caractere_redefinit()
+            self.minitel.couleur("rouge")
+            self.minitel.repeter("-", 39)
+            self.__minitel_extension.revenir_jeu_caractere_standard()
 
     def gere_touche(self, sequence):
 
@@ -144,3 +180,13 @@ class ResultatRechercheComposant(UI):
         if sequence.egale(HAUT):
             self.__recherche_controleur.resultat_recherche_precedent()
             return True
+
+        if sequence.egale(SUITE):
+            self.__recherche_controleur.resultat_recherche_page_suivante()
+            return True
+
+        if sequence.egale(RETOUR):
+            self.__recherche_controleur.resultat_recherche_page_precedente()
+            return True
+
+        return False

@@ -19,6 +19,19 @@ class CaracteresMinitel(Enum):
         self.dessin = dessin
         self.caractere = caractere
 
+    SEPARATEUR = """
+        00000000
+        00000000
+        00000000
+        00000000
+        01000100
+        00000000
+        00000000
+        00000000
+        00000000
+        00000000
+    """, "-"
+
     BARRE_HAUT_VIDE = """
         01111111
         01000001

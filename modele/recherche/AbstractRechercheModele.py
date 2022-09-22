@@ -8,6 +8,7 @@ from enum import Enum, auto
 from typing import List
 
 import inject
+import math
 from pyobservable import Observable
 
 from modele.Chanson import Chanson
@@ -27,6 +28,8 @@ class EvenementRechercheModele(Enum):
 
 
 class AbstractRechercheModele:
+    TAILLE_PAGE_RECHERCHE = 5
+
     __notificateur_evenement = inject.attr(Observable)
 
     evenement_sortie: EvenementSortieEcran
@@ -53,7 +56,21 @@ class AbstractRechercheModele:
             self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION,
                                                  MouvementSelection.MONTE)
 
+    def resultat_recherche_page_suivante(self):
+        element_page_suivante = math.ceil(self.element_selectionne / 5) * 5 + 1
+        if element_page_suivante < len(self.liste_resultat) + 1:
+            self.element_selectionne = element_page_suivante
+            self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION,
+                                                 MouvementSelection.PAGE)
+
+    def resultat_recherche_page_precedente(self):
+        element_page_precedente = (math.ceil(self.element_selectionne / 5) - 2) * 5 + 1
+        if element_page_precedente >= 1:
+            self.element_selectionne = element_page_precedente
+            self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION,
+                                                 MouvementSelection.PAGE)
+
     def annuler_recherche(self):
-        self.liste_resultat = []
-        self.element_selectionne = 0
+        # self.liste_resultat = []
+        # self.element_selectionne = 0
         self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_ANNULATION_RECHERCHE)

@@ -46,6 +46,12 @@ class AbstractRechercheControleur:
     def resultat_recherche_precedent(self):
         self._recherche_modele.resultat_recherche_precedent()
 
+    def resultat_recherche_page_suivante(self):
+        self._recherche_modele.resultat_recherche_page_suivante()
+
+    def resultat_recherche_page_precedente(self):
+        self._recherche_modele.resultat_recherche_page_precedente()
+
     def annuler_recherche(self):
         logging.debug("Annule la recherche")
         self._recherche_modele.annuler_recherche()
