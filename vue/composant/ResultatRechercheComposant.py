@@ -10,7 +10,7 @@ from enum import Enum
 import inject
 import math
 from minitel.Minitel import Minitel
-from minitel.constantes import BAS, HAUT, SUITE, RETOUR
+from minitel.constantes import BAS, HAUT, SUITE, RETOUR, ANNULATION, CORRECTION, ENTREE, ENVOI
 from minitel.ui.UI import UI
 from pyobservable import Observable
 
@@ -19,6 +19,7 @@ from modele.recherche.AbstractRechercheModele import AbstractRechercheModele, Mo
     EvenementRechercheModele
 from service.minitel.MinitelExtension import MinitelExtension
 from vue.bidule.Etiquette import Etiquette, Alignement
+from vue.bidule.Sablier import Sablier
 
 
 class EtatLigne(Enum):
@@ -36,11 +37,11 @@ class EtatLigne(Enum):
 class ResultatRechercheComposant(UI):
     __minitel_extension = inject.attr(MinitelExtension)
     __notificateur_evenement = inject.attr(Observable)
+    __sablier = inject.attr(Sablier)
 
     def __init__(self, minitel: Minitel, posy, taille_cartouche,
                  recherche_modele: AbstractRechercheModele, recherche_controleur: AbstractRechercheControleur,
-                 formateur_cartouche, formateur_ligne
-                 ):
+                 formateur_cartouche, formateur_ligne):
         super().__init__(
             minitel=minitel,
             posx=1,
@@ -61,16 +62,20 @@ class ResultatRechercheComposant(UI):
         self._taille_cartouche = taille_cartouche
         self._taille_ligne = self.largeur - self._taille_cartouche - 1
 
-        self.__notificateur_evenement.bind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT, self._dessin)
+        self.__notificateur_evenement.bind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT, self._resultat)
         self.__notificateur_evenement.bind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION, self._dessin)
         self.__notificateur_evenement.bind(EvenementRechercheModele.EVENEMENT_ANNULATION_RECHERCHE, self._annulation)
 
     def fermer(self):
-        self.__notificateur_evenement.unbind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT, self._dessin)
+        self.__notificateur_evenement.unbind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT, self._resultat)
         self.__notificateur_evenement.unbind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION, self._dessin)
         self.__notificateur_evenement.unbind(EvenementRechercheModele.EVENEMENT_ANNULATION_RECHERCHE, self._annulation)
 
-    def _annulation(self):
+    def _resultat(self):
+        self.__sablier.arreter()
+        self._dessin(MouvementSelection.PAGE)
+
+    def _annulation(self, conserver_texte_saisie):
         self._dessin(MouvementSelection.PAGE, est_actif=False)
 
     def _dessin(self, mouvement_selection: MouvementSelection = MouvementSelection.PAGE, est_actif=True):
@@ -82,20 +87,20 @@ class ResultatRechercheComposant(UI):
             if compteur % 5 == 4:
                 self._dessin(MouvementSelection.PAGE)
             else:
-                chanson = self.__recherche_modele.liste_resultat[compteur]
-                self.__affichage_bloc_ligne(chanson, compteur % 5, True, est_actif)
-                chanson = self.__recherche_modele.liste_resultat[compteur + 1]
-                self.__affichage_bloc_ligne(chanson, compteur % 5 + 1, False, est_actif)
+                element = self.__recherche_modele.liste_resultat[compteur]
+                self.__affichage_bloc_ligne(element, compteur % 5, True, est_actif)
+                element = self.__recherche_modele.liste_resultat[compteur + 1]
+                self.__affichage_bloc_ligne(element, compteur % 5 + 1, False, est_actif)
 
         elif mouvement_selection == MouvementSelection.DESCEND:
             compteur = self.__recherche_modele.element_selectionne - 1
             if compteur % 5 == 0:
                 self._dessin(MouvementSelection.PAGE)
             else:
-                chanson = self.__recherche_modele.liste_resultat[compteur]
-                self.__affichage_bloc_ligne(chanson, compteur % 5, True, est_actif)
-                chanson = self.__recherche_modele.liste_resultat[compteur - 1]
-                self.__affichage_bloc_ligne(chanson, compteur % 5 - 1, False, est_actif)
+                element = self.__recherche_modele.liste_resultat[compteur]
+                self.__affichage_bloc_ligne(element, compteur % 5, True, est_actif)
+                element = self.__recherche_modele.liste_resultat[compteur - 1]
+                self.__affichage_bloc_ligne(element, compteur % 5 - 1, False, est_actif)
 
         elif mouvement_selection == MouvementSelection.PAGE:
             self.minitel.position(1, self.posy)
@@ -106,9 +111,9 @@ class ResultatRechercheComposant(UI):
 
                 index = page * 5 + compteur
                 if index < len(self.__recherche_modele.liste_resultat):
-                    chanson = self.__recherche_modele.liste_resultat[index]
+                    element = self.__recherche_modele.liste_resultat[index]
                     est_selectionne = (self.__recherche_modele.element_selectionne - 1) % 5 == compteur
-                    self.__affichage_bloc_ligne(chanson, compteur, est_selectionne, est_actif)
+                    self.__affichage_bloc_ligne(element, compteur, est_selectionne, est_actif)
                 else:
                     self.__affichage_bloc_ligne(None, compteur, False, est_actif)
 
@@ -125,12 +130,10 @@ class ResultatRechercheComposant(UI):
         texte = f"  résultats {debut} à {fin if fin < total else total} sur {total} "
         Etiquette.aligne(Alignement.DROITE, self.posy + 3 * 5 + 1, texte, "rouge").affiche()
 
-    def __affichage_bloc_ligne(self, chanson, rang_element, selectionne, actif):
+    def __affichage_bloc_ligne(self, element, rang_element, selectionne, actif):
 
-        texte_cartouche = self.__formateur_cartouche(chanson)
-
-        texte_ligne = self.__formateur_ligne(chanson)
-
+        texte_cartouche = self.__formateur_cartouche(element)
+        texte_ligne = self.__formateur_ligne(element)
         etat_ligne = EtatLigne.INACTIF if not actif else EtatLigne.SELECTIONNE if selectionne else EtatLigne.NORMAL
 
         self.minitel.position(1, 1 + self.posy + rang_element * 3)
@@ -187,6 +190,22 @@ class ResultatRechercheComposant(UI):
 
         if sequence.egale(RETOUR):
             self.__recherche_controleur.resultat_recherche_page_precedente()
+            return True
+
+        if sequence.egale(ANNULATION):
+            self.__recherche_controleur.annuler_recherche(conserver_texte_saisie=False)
+            return True
+
+        if sequence.egale(CORRECTION):
+            self.__recherche_controleur.annuler_recherche(conserver_texte_saisie=True)
+            return True
+
+        if sequence.egale(ENTREE):
+            logging.info("Ajoute à la playlist")
+            return True
+
+        if sequence.egale(ENVOI):
+            self.__recherche_controleur.envoyer_lecture()
             return True
 
         return False

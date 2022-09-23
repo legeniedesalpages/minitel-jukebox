@@ -37,9 +37,11 @@ if __name__ == '__main__':
     logging.info("Lancement du Jukebox Minitel")
     inject.configure(my_config)
 
+    juke_box = JukeBoxControleur()
     try:
-        JukeBoxControleur().demarrer()
+        juke_box.demarrer()
     except KeyboardInterrupt:
+        juke_box.fermer()
         pass
 
     logging.info("Arret du Jukebox Minitel")

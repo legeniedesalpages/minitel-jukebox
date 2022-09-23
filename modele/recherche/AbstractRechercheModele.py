@@ -70,7 +70,7 @@ class AbstractRechercheModele:
             self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_CHANGEMENT_SELECTION,
                                                  MouvementSelection.PAGE)
 
-    def annuler_recherche(self):
-        # self.liste_resultat = []
-        # self.element_selectionne = 0
-        self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_ANNULATION_RECHERCHE)
+    def annuler_recherche(self, conserver_texte_saisie):
+        self.element_selectionne = 0
+        self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_ANNULATION_RECHERCHE,
+                                             conserver_texte_saisie)

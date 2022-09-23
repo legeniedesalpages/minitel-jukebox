@@ -6,14 +6,19 @@ __version__ = "1.0.0"
 
 import logging
 
+import inject
+
 from service.recherche.GenerateurRecherche import GenerateurRecherche
 from modele.JukeBoxModele import JukeBoxModele, TypeRecherche, EvenementSortieEcran
 from vue.EcranDemarrageVue import EcranDemarrageVue
 from vue.EcranFinVue import EcranFinVue
 from vue.EcranVisualisationChanson import EcranVisualisationChanson
+from vue.bidule.Sablier import Sablier
 
 
 class JukeBoxControleur:
+
+    __sablier = inject.attr(Sablier)
 
     def __init__(self):
         logging.debug("Initialisation du JukeBox")
@@ -41,3 +46,6 @@ class JukeBoxControleur:
             logging.info(f"Evenement de sortie: {evenement_sortie_ecran}")
 
         EcranFinVue().afficher()
+
+    def fermer(self):
+        self.__sablier.eteindre()

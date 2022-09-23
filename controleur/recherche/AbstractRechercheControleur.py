@@ -35,7 +35,14 @@ class AbstractRechercheControleur:
         self._recherche_modele.evenement_sortie = EvenementSortieEcran.AFFICHER_RECHERCHE
 
     def envoyer_lecture(self):
+        self._envoyer_lecture(self._recherche_modele.liste_resultat[self._recherche_modele.element_selectionne])
         self._recherche_modele.evenement_sortie = EvenementSortieEcran.VISUALISER_CHANSON
+
+    def _envoyer_lecture(self, element):
+        pass
+
+    def lancer_recherche(self, texte_a_chercher):
+        pass
 
     def arreter_application(self):
         self._recherche_modele.evenement_sortie = EvenementSortieEcran.ARRETER_APPLICATION
@@ -52,6 +59,6 @@ class AbstractRechercheControleur:
     def resultat_recherche_page_precedente(self):
         self._recherche_modele.resultat_recherche_page_precedente()
 
-    def annuler_recherche(self):
+    def annuler_recherche(self, conserver_texte_saisie):
         logging.debug("Annule la recherche")
-        self._recherche_modele.annuler_recherche()
+        self._recherche_modele.annuler_recherche(conserver_texte_saisie)

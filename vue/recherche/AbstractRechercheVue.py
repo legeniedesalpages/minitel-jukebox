@@ -60,10 +60,6 @@ class AbstractRechercheVue(EcranInterface):
             logging.debug("Touche gérée par la vue générique")
             self._recherche_controleur.changer_type_recherche()
 
-        elif sequence.egale(ENVOI):
-            logging.debug("Touche gérée par la vue générique")
-            self._recherche_controleur.envoyer_lecture()
-
         elif self._conteneur.element_actif is not None and self._conteneur.element_actif.gere_touche(sequence):
             # l'élément actif est prioritaire par rapport aux règles de l'écran lui-même
             logging.debug("Touche gérée par l'element actif")

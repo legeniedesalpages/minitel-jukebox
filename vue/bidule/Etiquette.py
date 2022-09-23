@@ -54,6 +54,11 @@ class Etiquette(UI):
         self.__minitel.couleur(self.__couleur_texte)
         flip_flop = False
         for mot in self.__texte.split("^"):
-            self.__minitel.effet(inversion=flip_flop)
+            if len(mot) > 0 and mot[0] == '_':
+                mot = mot[1:]
+                clignotant = True
+            else:
+                clignotant = False
+            self.__minitel.effet(inversion=flip_flop, clignotement=clignotant)
             self.__minitel.envoyer(mot)
             flip_flop = not flip_flop
