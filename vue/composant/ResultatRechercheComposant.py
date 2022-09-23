@@ -15,6 +15,7 @@ from minitel.ui.UI import UI
 from pyobservable import Observable
 
 from controleur.recherche.AbstractRechercheControleur import AbstractRechercheControleur
+from modele.JukeBoxModele import EvenementSortieEcran
 from modele.recherche.AbstractRechercheModele import AbstractRechercheModele, MouvementSelection, \
     EvenementRechercheModele
 from service.minitel.MinitelExtension import MinitelExtension
@@ -79,6 +80,9 @@ class ResultatRechercheComposant(UI):
         self._dessin(MouvementSelection.PAGE, est_actif=False)
 
     def _dessin(self, mouvement_selection: MouvementSelection = MouvementSelection.PAGE, est_actif=True):
+        if self.__recherche_modele.evenement_sortie != EvenementSortieEcran.PAS_DE_SORTIE:
+            return
+
         logging.debug(f"Dessin du composant des résultats de recherche: {mouvement_selection}")
         self.minitel.curseur(False)
 
@@ -201,7 +205,7 @@ class ResultatRechercheComposant(UI):
             return True
 
         if sequence.egale(ENTREE):
-            logging.info("Ajoute à la playlist")
+            logging.info("Ajoute à la liste de lecture")
             return True
 
         if sequence.egale(ENVOI):

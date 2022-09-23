@@ -18,9 +18,9 @@ class RechercheYoutubeControleur(AbstractRechercheControleur):
         super().__init__(juke_box_modele, recherche_modele)
         self.__chanson_service = ChansonService()
 
-    def lancer_recherche(self, titre_chanson):
+    def lancer_recherche(self, titre_chanson, nombre_a_cherche=20):
         logging.debug(f"Lancer la recherche {self.__chanson_service}")
-        liste_chanson_trouvee = self.__chanson_service.rechercher_chanson(str(titre_chanson), 17)
+        liste_chanson_trouvee = self.__chanson_service.rechercher_chanson(str(titre_chanson), nombre_a_cherche)
         self._recherche_modele.changer_liste_resultat(liste_chanson_trouvee)
 
     def _envoyer_lecture(self, chanson):

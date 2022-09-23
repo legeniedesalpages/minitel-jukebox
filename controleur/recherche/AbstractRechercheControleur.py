@@ -35,14 +35,19 @@ class AbstractRechercheControleur:
         self._recherche_modele.evenement_sortie = EvenementSortieEcran.AFFICHER_RECHERCHE
 
     def envoyer_lecture(self):
-        self._envoyer_lecture(self._recherche_modele.liste_resultat[self._recherche_modele.element_selectionne])
+        self._envoyer_lecture(self._recherche_modele.liste_resultat[self._recherche_modele.element_selectionne - 1])
         self._recherche_modele.evenement_sortie = EvenementSortieEcran.VISUALISER_CHANSON
 
     def _envoyer_lecture(self, element):
         pass
 
-    def lancer_recherche(self, texte_a_chercher):
+    def lancer_recherche(self, texte_a_chercher, nombre_a_cherche):
         pass
+
+    def chercher_et_lire(self, texte_a_chercher):
+        self._recherche_modele.evenement_sortie = EvenementSortieEcran.VISUALISER_CHANSON
+        self.lancer_recherche(texte_a_chercher, 1)
+        self._envoyer_lecture(self._recherche_modele.liste_resultat[0])
 
     def arreter_application(self):
         self._recherche_modele.evenement_sortie = EvenementSortieEcran.ARRETER_APPLICATION

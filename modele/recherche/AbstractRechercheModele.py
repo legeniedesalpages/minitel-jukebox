@@ -71,6 +71,5 @@ class AbstractRechercheModele:
                                                  MouvementSelection.PAGE)
 
     def annuler_recherche(self, conserver_texte_saisie):
-        self.element_selectionne = 0
         self.__notificateur_evenement.notify(EvenementRechercheModele.EVENEMENT_ANNULATION_RECHERCHE,
                                              conserver_texte_saisie)

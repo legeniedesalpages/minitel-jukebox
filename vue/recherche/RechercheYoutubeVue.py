@@ -9,7 +9,7 @@ import re
 
 import inject
 from minitel.Minitel import Minitel
-from minitel.constantes import ENTREE
+from minitel.constantes import ENTREE, ANNULATION, ENVOI
 from minitel.ui.ChampTexte import ChampTexte
 from minitel.ui.Label import Label
 from pyobservable import Observable
@@ -84,13 +84,13 @@ class RechercheYoutubeVue(AbstractRechercheVue):
             self.__champ_saisie.curseur_x = 0
             self.__champ_saisie.decalage = 0
 
-        self.__remplacer_etiquette(Etiquette.aligne(Alignement.DROITE, 23, "  Lancer la recherche ^ENTREE^"))
+        self.__remplacer_etiquette(Etiquette.aligne(Alignement.DROITE, 23, "          Lancer la recherche ^ENTREE^"))
         self._conteneur.element_actif = self.__champ_saisie
         self.__champ_saisie.affiche()
 
     def _afficher_resultat_recherche(self):
         self._conteneur.element_actif = self.__resultat_recherche
-        self.__remplacer_etiquette(Etiquette.aligne(Alignement.DROITE, 23, "Ajouter à la playlist ^ENTREE^"))
+        self.__remplacer_etiquette(Etiquette.aligne(Alignement.DROITE, 23, "Ajouter à la liste de lecture ^ENTREE^"))
 
     def __remplacer_etiquette(self, nouvelle_etiquette):
         self._conteneur.elements.remove(self.__etiquette_touche_entree)
@@ -100,10 +100,24 @@ class RechercheYoutubeVue(AbstractRechercheVue):
 
     def gerer_touche(self, sequence):
 
+        if sequence.egale(ENVOI):
+            logging.info("Recherche et lit la chanson sans passer par l'affichage du résultat de la recherche")
+            if len(self.__champ_saisie.valeur.strip()) > 0:
+                self._recherche_controleur.chercher_et_lire(self.__champ_saisie.valeur)
+            return True
+
         if sequence.egale(ENTREE):
             if len(self.__champ_saisie.valeur.strip()) > 0:
                 self.__sablier.demarrer()
                 self._recherche_controleur.lancer_recherche(self.__champ_saisie.valeur)
             return True
+
+        if sequence.egale(ANNULATION):
+            if self._conteneur.element_actif is self.__champ_saisie:
+                self.__champ_saisie.valeur = ""
+                self.__champ_saisie.curseur_x = 0
+                self.__champ_saisie.decalage = 0
+                self.__champ_saisie.affiche()
+                return True
 
         return False
