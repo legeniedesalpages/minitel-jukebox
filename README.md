@@ -6,6 +6,7 @@ Transformer un Minitel en JukeBox
 
 sudo apt install vlc
 
+pip install requests
 pip install pyobservable
 pip install inject<br/>
 pip install pafy<br/>

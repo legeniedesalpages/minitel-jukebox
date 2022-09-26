@@ -28,7 +28,7 @@ class JukeBoxControleur:
         logging.info(f"Démarrage du JukeBox")
         EcranDemarrageVue().afficher()
 
-        juke_box_modele = JukeBoxModele(TypeRecherche.YOUTUBE)
+        juke_box_modele = JukeBoxModele(TypeRecherche.SPOTIFY)
 
         evenement_sortie_ecran = EvenementSortieEcran.AFFICHER_RECHERCHE
         while evenement_sortie_ecran is not EvenementSortieEcran.ARRETER_APPLICATION:
