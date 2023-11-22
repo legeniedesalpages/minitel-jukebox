@@ -19,6 +19,7 @@ class EvenementSortieEcran(Enum):
     PAS_DE_SORTIE = auto()
     AFFICHER_RECHERCHE = auto()
     VISUALISER_CHANSON = auto()
+    CONFIGURATION_BLUETOOTH = auto()
     ARRETER_APPLICATION = auto()
 
 

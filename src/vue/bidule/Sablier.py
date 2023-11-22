@@ -25,8 +25,8 @@ class Sablier:
         self.__declencheur = threading.Thread(target=self._dessine)
         self.__declencheur.start()
 
-    def eteindre(self):
-        logging.info("Fin du thread du sablier")
+    def detruire(self):
+        logging.debug("Fin du thread du sablier")
         self.__fin = True
         self.__evenement.set()
 

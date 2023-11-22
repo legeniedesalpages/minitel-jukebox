@@ -5,7 +5,6 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 import logging
-
 import inject
 from minitel.Minitel import Minitel
 from pyobservable import Observable

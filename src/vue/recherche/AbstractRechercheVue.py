@@ -8,7 +8,7 @@ import logging
 
 import inject
 from minitel.Minitel import Minitel
-from minitel.constantes import SOMMAIRE, ENVOI
+from minitel.constantes import SOMMAIRE, ENVOI, GUIDE
 from minitel.ui.ChampTexte import ChampTexte
 from minitel.ui.Conteneur import Conteneur
 
@@ -56,7 +56,11 @@ class AbstractRechercheVue(EcranInterface):
 
     def __gerer_touche(self, sequence):
 
-        if sequence.egale(SOMMAIRE):
+        if sequence.egale(GUIDE):
+            logging.debug("Touche gérée par la vue générique")
+            self._recherche_controleur.afficher_configuration_bluetooth()
+
+        elif sequence.egale(SOMMAIRE):
             logging.debug("Touche gérée par la vue générique")
             self._recherche_controleur.changer_type_recherche()
 

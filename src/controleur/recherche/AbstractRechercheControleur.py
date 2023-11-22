@@ -6,6 +6,7 @@ __version__ = "1.0.0"
 
 import logging
 
+from modele.Chanson import Chanson
 from modele.JukeBoxModele import JukeBoxModele, EvenementSortieEcran
 from modele.recherche.AbstractRechercheModele import AbstractRechercheModele
 from vue.EcranInterface import EcranInterface
@@ -15,7 +16,7 @@ class AbstractRechercheControleur:
     __ecran_recherche_interface: EcranInterface
 
     def __init__(self, juke_box_modele: JukeBoxModele, recherche_modele: AbstractRechercheModele):
-        logging.debug("Initialisation du controleur Youtube")
+        logging.debug("Initialisation du controleur générique")
         self.__juke_box_modele = juke_box_modele
         self._recherche_modele = recherche_modele
 
@@ -34,12 +35,18 @@ class AbstractRechercheControleur:
         self.__juke_box_modele.changer_recherche()
         self._recherche_modele.evenement_sortie = EvenementSortieEcran.AFFICHER_RECHERCHE
 
+    def afficher_configuration_bluetooth(self):
+        self._recherche_modele.evenement_sortie = EvenementSortieEcran.CONFIGURATION_BLUETOOTH
+
     def envoyer_lecture(self):
         self._envoyer_lecture(self._recherche_modele.liste_resultat[self._recherche_modele.element_selectionne - 1])
         self._recherche_modele.evenement_sortie = EvenementSortieEcran.VISUALISER_CHANSON
 
-    def _envoyer_lecture(self, element):
+    def _envoyer_lecture(self, element: Chanson):
         pass
+
+    def chanson_selectionne(self):
+        return self._recherche_modele.liste_resultat[self._recherche_modele.element_selectionne - 1]
 
     def lancer_recherche(self, texte_a_chercher, nombre_a_cherche):
         pass
