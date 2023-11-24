@@ -12,14 +12,14 @@ from controleur.recherche.AbstractRechercheControleur import AbstractRechercheCo
 from modele.Chanson import Chanson
 from modele.JukeBoxModele import JukeBoxModele
 from modele.recherche.AbstractRechercheModele import AbstractRechercheModele
-from service.youtube.ChansonService import ChansonService
+from service.youtube.YoutubeChansonService import YoutubeChansonService
 
 
 class RechercheYoutubeControleur(AbstractRechercheControleur):
 
     def __init__(self, juke_box_modele: JukeBoxModele, recherche_modele: AbstractRechercheModele):
         super().__init__(juke_box_modele, recherche_modele)
-        self.__chanson_service = ChansonService()
+        self.__chanson_service = YoutubeChansonService()
         self.__player = vlc.MediaPlayer()
 
     def lancer_recherche(self, titre_chanson, nombre_a_cherche=20):

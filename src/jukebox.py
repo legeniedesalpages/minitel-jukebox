@@ -11,8 +11,6 @@ from pyobservable import Observable
 
 from configuration.EvenementConfiguration import produire_notificateur_evenement
 from controleur.JukeBoxControleur import JukeBoxControleur
-from service.audio.AudioConfiguration import produire_audio_service
-from service.audio.AudioService import AudioService
 from service.minitel.MinitelConfiguration import produire_minitel, produire_minitel_extension
 from service.minitel.MinitelExtension import MinitelExtension
 
@@ -22,7 +20,6 @@ def my_config(binder):
     minitel = produire_minitel()
     binder.bind(Minitel, minitel)
     binder.bind(MinitelExtension, produire_minitel_extension(minitel))
-    binder.bind(AudioService, produire_audio_service())
     binder.bind(Observable, produire_notificateur_evenement())
 
 

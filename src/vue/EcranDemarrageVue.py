@@ -11,10 +11,8 @@ from PIL import Image
 from minitel.ImageMinitel import ImageMinitel
 from minitel.Minitel import Minitel
 
-from vue.EcranInterface import EcranInterface
 
-
-class EcranDemarrageVue(EcranInterface):
+class EcranDemarrageVue:
 
     @inject.autoparams()
     def __init__(self, minitel: Minitel):
@@ -26,7 +24,7 @@ class EcranDemarrageVue(EcranInterface):
         self.__minitel.couleur(caractere='blanc')
         self.__minitel.envoyer('Minitel JukeBox')
 
-        image = Image.open("ressources/splash.jpg")
+        image = Image.open("/home/pi/minitel/minitel-jukebox/ressources/splash.jpg")
         image = image.resize((65, 65), Image.ANTIALIAS)
         image_minitel = ImageMinitel(self.__minitel)
         image_minitel.importer(image)

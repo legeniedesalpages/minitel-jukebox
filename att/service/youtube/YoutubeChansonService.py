@@ -12,7 +12,7 @@ from youtubesearchpython import VideosSearch
 from modele.Chanson import Chanson
 
 
-class ChansonService:
+class YoutubeChansonService:
 
     def __init__(self):
         logging.info("Initialisation wrapper youtube")
