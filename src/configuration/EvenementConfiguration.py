@@ -6,10 +6,8 @@ __version__ = "1.0.0"
 
 from pyobservable import Observable
 
+from modele.BluetoothModele import BluetoothModele
 from modele.audio.AudioModele import AudioModele
-
-
-# from modele.recherche.AbstractRechercheModele import EvenementRechercheModele
 
 
 def produire_notificateur_evenement() -> Observable:
@@ -17,7 +15,8 @@ def produire_notificateur_evenement() -> Observable:
 
     notificateur_evenement.add_event(AudioModele.EVENEMENT_CHANGEMENT_VOLUME)
 
-    # for evenement_recherche_modele in EvenementRechercheModele:
-    #     notificateur_evenement.add_event(evenement_recherche_modele)
+    notificateur_evenement.add_event(BluetoothModele.EVENEMENT_LISTE_PERIPHERIQUE_BLUETOOTH_CHANGE)
+    notificateur_evenement.add_event(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE)
+    notificateur_evenement.add_event(BluetoothModele.EVENEMENT_SELECTION_DANS_LISTE_PERIPHERIQUE_CHANGE)
 
     return notificateur_evenement

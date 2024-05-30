@@ -13,7 +13,7 @@ from modele.BluetoothModele import BluetoothModele
 from service.recherche.GenerateurRecherche import GenerateurRecherche
 from modele.JukeBoxModele import JukeBoxModele, TypeRecherche, EvenementSortieEcran
 from vue.EcranBluetooth import EcranBluetoothVue
-from vue.EcranDemarrageVue import EcranDemarrageVue
+from vue.EcranDemarrage import EcranDemarrage
 from vue.EcranFinVue import EcranFinVue
 from vue.EcranVisualisationChanson import EcranVisualisationChanson
 from vue.bidule.Sablier import Sablier
@@ -55,7 +55,7 @@ class JukeBoxControleur:
 
             logging.info(f"Evenement de sortie: {evenement_sortie_ecran}")
 
-        EcranFinVue().afficher()
+        EcranFinVue().lancer()
 
     def fermer(self):
         self.__sablier.detruire()

@@ -20,3 +20,9 @@ pip install pyalsaaudio<br/>
 récuperer le projet<br/>
 https://github.com/Zigazou/PyMinitel <br/>
 sudo python setup.py install<br/>
+
+# Après démarrage du minitel
+
+Fct+Sommaire<br/>
+Fct+T V<br/>
+Fct+P 9<br/>

@@ -12,7 +12,7 @@ from minitel.ImageMinitel import ImageMinitel
 from minitel.Minitel import Minitel
 
 
-class EcranDemarrageVue:
+class EcranDemarrage:
 
     @inject.autoparams()
     def __init__(self, minitel: Minitel):

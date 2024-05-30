@@ -24,7 +24,7 @@ class AbstractRechercheControleur:
         self.__ecran_recherche_interface = ecran_recherche_interface
 
     def afficher_ecran_recherche(self) -> EvenementSortieEcran:
-        self.__ecran_recherche_interface.afficher()
+        self.__ecran_recherche_interface.lancer()
         # afficher() est bloquant
         self.__ecran_recherche_interface.fermer()
 

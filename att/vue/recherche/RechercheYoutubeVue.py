@@ -52,7 +52,7 @@ class RechercheYoutubeVue(AbstractRechercheVue):
                                            self._annulation_recherche)
         self.__notificateur_evenement.bind(EvenementRechercheModele.EVENEMENT_CHANGEMENT_RESULTAT,
                                            self._afficher_resultat_recherche)
-        super(RechercheYoutubeVue, self).afficher()
+        super(RechercheYoutubeVue, self).lancer()
 
     def fermer(self):
         super(RechercheYoutubeVue, self).fermer()

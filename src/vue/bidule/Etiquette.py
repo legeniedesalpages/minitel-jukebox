@@ -4,10 +4,11 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
+import logging
+import math
 from enum import Enum, auto
 
 import inject
-import math
 from minitel.Minitel import Minitel
 from minitel.ui.UI import UI
 
@@ -23,6 +24,7 @@ class Etiquette(UI):
     __minitel = inject.attr(Minitel)
 
     def __init__(self, posx, posy, valeur: str, couleur_texte=None, alignement=Alignement.AUCUN):
+        logging.debug(f"Initialisation d'une étiquette {valeur}")
         len_valeur_brut = len(valeur.replace("^", ""))
         if alignement is Alignement.AUCUN:
             x = posx

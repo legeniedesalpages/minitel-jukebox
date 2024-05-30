@@ -4,18 +4,43 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
+import abc
 import logging
 from typing import List, Optional
 
-from minitel.Minitel import Minitel
+from minitel.Sequence import Sequence
+
+from controleur.PeutGererTouche import PeutGererTouche
+from vue.Affichable import Affichable
 
 
 class AbstractControleur:
-    __vue: Optional
+    __metaclass__ = abc.ABCMeta
 
-    def __init__(self, minitel: Minitel, modeles: List):
-        self.__minitel = minitel
-        logging.info("Controleur créé")
+    _vue: Optional[Affichable]
 
-    def enregistrer_vue(self, vue):
-        self.__vue = vue
+    def __init__(self, controleur_pouvant_gerer_touche: List[PeutGererTouche], modeles: dict[str, object]):
+        logging.debug("Controleur générique créé")
+        self._controleur_pouvant_gerer_touche = controleur_pouvant_gerer_touche
+
+    def gere_touche(self, sequence: Sequence) -> Optional[bool]:
+        gestion_specifique = self._gere_touche(sequence)
+        if gestion_specifique is None:
+            for controleur_pouvant_gerer_toucher in self._controleur_pouvant_gerer_touche:
+                retour = controleur_pouvant_gerer_toucher.gere_touche(sequence)
+                if retour is not None:
+                    return retour
+        else:
+            return gestion_specifique
+
+        return None
+
+    def enregistrer_vue(self, vue: Affichable):
+        self._vue = vue
+
+    def lancer(self):
+        self._vue.afficher()
+
+    @abc.abstractmethod
+    def _gere_touche(self, touche: Sequence) -> Optional[bool]:
+        return None

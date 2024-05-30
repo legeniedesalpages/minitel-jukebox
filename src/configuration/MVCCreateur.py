@@ -5,40 +5,49 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 import importlib
-from typing import Type, List, Tuple
+from typing import Type, List
 
 import inject
 from minitel.Minitel import Minitel
 
 from controleur.AbstractControleur import AbstractControleur
-from service.minitel.MinitelExtension import MinitelExtension
-from vue.AbstractVue import AbstractVue
+from controleur.PeutGererTouche import PeutGererTouche
+from modele.JukeBoxModele import JukeBoxModele
+from vue.AbstractEcran import AbstractEcran
 
 
 class MVCCreateur:
+    __controleurs_pouvant_gerer_touche: List[PeutGererTouche]
+    __modeles_communs: dict[str, object]
 
     @inject.autoparams()
-    def __init__(self, minitel: Minitel, minitel_extension: MinitelExtension):
+    def __init__(self, jukebox_modele: JukeBoxModele, minitel: Minitel):
+        self.__jukebox_modele = jukebox_modele
         self.__minitel = minitel
-        self.__minitel_extension = minitel_extension
 
-    def creation(self, controleur_type: Type[AbstractControleur], vue_type: Type[AbstractVue], liste_modele: List) -> \
-            Tuple[AbstractControleur, AbstractVue]:
+    def ajouter_controleur_commun(self, controleur_pouvant_gerer_touche: List[PeutGererTouche]):
+        self.__controleurs_pouvant_gerer_touche = controleur_pouvant_gerer_touche
+
+    def ajouter_modele_commun(self, modeles: dict[str, object]):
+        self.__modeles_communs = modeles
+
+    def creation(self, controleur_type: Type[AbstractControleur], vue_type: Type[AbstractEcran], map_modele: dict[str, object]) -> AbstractControleur:
+        modeles = map_modele | self.__modeles_communs
+
         controleur: AbstractControleur = self.__instanciation(controleur_type)(
-            self.__minitel,
-            liste_modele
+            self.__controleurs_pouvant_gerer_touche,
+            modeles
         )
 
-        vue: AbstractVue = self.__instanciation(vue_type)(
+        vue: AbstractEcran = self.__instanciation(vue_type)(
             self.__minitel,
-            self.__minitel_extension,
             controleur,
-            liste_modele
+            modeles
         )
 
         controleur.enregistrer_vue(vue)
 
-        return controleur, vue
+        return controleur
 
     @staticmethod
     def __instanciation(class_type):

@@ -6,6 +6,12 @@ __version__ = "1.0.0"
 
 from enum import Enum
 
+from minitel.Sequence import Sequence
+
+TOUCHE_ECHAP = Sequence(27)
+TOUCHE_SHIFT_HAUT = Sequence([27, 91, 77])
+TOUCHE_SHIFT_BAS = Sequence([27, 91, 76])
+
 
 class CaracteresMinitel(Enum):
 
@@ -187,3 +193,29 @@ class CaracteresMinitel(Enum):
             01000001
             01111111
     """, "f"
+
+    BLUETOOTH = """
+            00000000
+            00011000
+            10010100
+            01010010
+            00110100
+            00111000
+            01010100
+            10010010
+            00010100
+            00011000
+    """, "B"
+
+    BLUETOOTH_OFF = """
+            00000000
+            00011000
+            10010100
+            01010010
+            00100100
+            00010000
+            01001000
+            10010100
+            00010010
+            00011001
+    """, "O"

@@ -10,20 +10,21 @@ from minitel.constantes import ESC
 
 class MinitelExtension:
 
-    def __init__(self, minitel: Minitel):
-        self.__minitel = minitel
+    @staticmethod
+    def demarrer_affichage_jeu_caractere_redefinit(minitel: Minitel):
+        minitel.envoyer([ESC, 0x28, 0x20, 0x42])
 
-    def demarrer_affichage_jeu_caractere_redefinit(self):
-        self.__minitel.envoyer([ESC, 0x28, 0x20, 0x42])
+    @staticmethod
+    def revenir_jeu_caractere_standard(minitel: Minitel):
+        minitel.envoyer([ESC, 0x28, 0x40])
 
-    def revenir_jeu_caractere_standard(self):
-        self.__minitel.envoyer([ESC, 0x28, 0x40])
+    @staticmethod
+    def position_couleur(minitel: Minitel, posx, posy, couleur):
+        minitel.position(posx, posy)
+        minitel.couleur(couleur)
 
-    def position_couleur(self, posx, posy, couleur):
-        self.__minitel.position(posx, posy)
-        self.__minitel.couleur(couleur)
-
-    def separateur(self, posy, couleur):
-        self.__minitel.position(1, posy)
-        self.__minitel.couleur(couleur)
-        self.__minitel.repeter(0x60, 40)
+    @staticmethod
+    def separateur(minitel: Minitel, posy, couleur):
+        minitel.position(1, posy)
+        minitel.couleur(couleur)
+        minitel.repeter(0x60, 39)
