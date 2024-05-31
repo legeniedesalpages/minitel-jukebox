@@ -16,6 +16,7 @@ from service.minitel.MinitelExtension import MinitelExtension
 
 class Sablier:
     __minitel = inject.attr(Minitel)
+    __minitel_extension = inject.attr(MinitelExtension)
 
     __sablier_tourne: bool
 
@@ -23,8 +24,7 @@ class Sablier:
         self.__evenement = threading.Event()
         self.__compteur = 0
         self.__fin = False
-        self.__declencheur = threading.Thread(target=self._dessine)
-        self.__declencheur.start()
+        threading.Thread(target=self._dessine).start()
         self.__sablier_tourne = False
 
     def detruire(self):
@@ -42,19 +42,18 @@ class Sablier:
         logging.debug("Effacement du sablier")
         etat_avant = self.__sablier_tourne
         self.__evenement.clear()
-        self.__minitel.position(40, 1)
+        self.__minitel.position(39, 1)
         self.__minitel.envoyer(" ")
         self.__sablier_tourne = False
         return etat_avant
 
     def _dessine(self):
-        self.__evenement.wait()
         while not self.__fin:
             self.__minitel.curseur(False)
             self.__compteur += 1
-            self.__minitel.position(40, 1)
-            MinitelExtension.demarrer_affichage_jeu_caractere_redefinit(self.__minitel)
+            self.__minitel.position(39, 1)
+            self.__minitel_extension.demarrer_affichage_jeu_caractere_redefinit()
             self.__minitel.envoyer(str(self.__compteur % 6))
-            MinitelExtension.revenir_jeu_caractere_standard(self.__minitel)
+            self.__minitel_extension.revenir_jeu_caractere_standard()
             time.sleep(80 / 1000)
             self.__evenement.wait()

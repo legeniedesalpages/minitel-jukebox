@@ -19,13 +19,14 @@ class AudioService:
         logging.debug(f" - Mixers de sortie audio connus: {alsaaudio.mixers()}")
 
         self.__mixer = alsaaudio.Mixer(AudioService.__PERIPHERIQUE_SORTIE_MASTER)
+        self.definir_volume(70)
 
         logging.debug(f"Volume au démarrage avant modification (gauche/droite): {self.__mixer.getvolume()}")
         if volume_demarrage is not None:
             self.__mixer.setvolume(volume_demarrage)
-            logging.debug(f"Volume configuré: {volume_demarrage}")
+            logging.info(f"Volume configuré: {volume_demarrage}")
 
-        logging.debug(f"Volume au démarrage après modification (gauche/droite): {self.__mixer.getvolume()}")
+        logging.info(f"Volume au démarrage après modification (gauche/droite): {self.__mixer.getvolume()}")
 
     def definir_volume(self, nouveau_volume):
         self.__mixer.setvolume(nouveau_volume)

@@ -4,27 +4,29 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
+import inject
 from minitel.Minitel import Minitel
 from minitel.constantes import ESC
 
 
 class MinitelExtension:
+    __minitel = inject.attr(Minitel)
 
-    @staticmethod
-    def demarrer_affichage_jeu_caractere_redefinit(minitel: Minitel):
-        minitel.envoyer([ESC, 0x28, 0x20, 0x42])
+    def demarrer_affichage_jeu_caractere_redefinit(self):
+        self.__minitel.envoyer([ESC, 0x28, 0x20, 0x42])
 
-    @staticmethod
-    def revenir_jeu_caractere_standard(minitel: Minitel):
-        minitel.envoyer([ESC, 0x28, 0x40])
+    def revenir_jeu_caractere_standard(self):
+        self.__minitel.envoyer([ESC, 0x28, 0x40])
 
-    @staticmethod
-    def position_couleur(minitel: Minitel, posx, posy, couleur):
-        minitel.position(posx, posy)
-        minitel.couleur(couleur)
+    def position_couleur(self, posx, posy, couleur):
+        self.__minitel.position(posx, posy)
+        self.__minitel.couleur(couleur)
 
-    @staticmethod
-    def separateur(minitel: Minitel, posy, couleur):
-        minitel.position(1, posy)
-        minitel.couleur(couleur)
-        minitel.repeter(0x60, 39)
+    def envoyer_ligne(self, posy, texte, couleur="blanc"):
+        self.position_couleur(1, posy, couleur)
+        sequence = texte[:39].ljust(39, " ")
+        self.__minitel.envoyer(sequence)
+
+    def effacer_ligne(self, posy):
+        self.__minitel.position(1, posy)
+        self.__minitel.repeter(" ", 39)

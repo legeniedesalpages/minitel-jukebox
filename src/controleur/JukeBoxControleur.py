@@ -8,7 +8,6 @@ import logging
 from typing import Optional
 
 import inject
-from minitel.Minitel import Minitel
 from minitel.Sequence import Sequence
 from minitel.constantes import SOMMAIRE
 
@@ -21,9 +20,11 @@ from controleur.composant.TitreControleur import TitreControleur
 from controleur.recherche.RechercheControleur import RechercheControleur
 from modele.BluetoothModele import BluetoothModele
 from modele.JukeBoxModele import JukeBoxModele
+from modele.audio.AudioModele import AudioModele
 from service.BluetoothService import BluetoothService
 from service.minitel.MinitelConstante import TOUCHE_ECHAP
 from vue.EcranBluetooth import EcranBluetooth
+from vue.EcranDemarrage import EcranDemarrage
 from vue.bidule.Sablier import Sablier
 from vue.recherche.EcranRecherche import EcranRecherche
 
@@ -32,23 +33,20 @@ class JukeBoxControleur(PeutGererTouche):
     __sablier = inject.attr(Sablier)
 
     @inject.autoparams()
-    def __init__(self, mvc_createur: MVCCreateur, jukebox_modele: JukeBoxModele, bluetooth_modele: BluetoothModele, bluetooth_service: BluetoothService, minitel: Minitel):
+    def __init__(self, bluetooth_service: BluetoothService, audio_modele: AudioModele):
         logging.debug("Initialisation du JukeBox")
-        self.__jukebox_modele = jukebox_modele
-        self.__bluetooth_modele = bluetooth_modele
-        self.__titre_controleur = TitreControleur(self.__bluetooth_modele, bluetooth_service)
-        self.__mvc_createur = mvc_createur
+        self.__jukebox_modele = JukeBoxModele()
+        bluetooth_modele = BluetoothModele()
+        self.__titre_controleur = TitreControleur(bluetooth_modele, bluetooth_service)
+        audio_controleur = AudioControleur(audio_modele)
+        lecture_controleur = LectureControleur()
+        self.__mvc_createur = MVCCreateur([self, audio_controleur, lecture_controleur], {"jukebox": self.__jukebox_modele, "bluetooth": bluetooth_modele})
 
     def demarrer(self):
         logging.info(f"Démarrage du JukeBox")
-        audio_controleur = AudioControleur()
-        lecture_controleur = LectureControleur()
-        self.__mvc_createur.ajouter_controleur_commun([self, audio_controleur, lecture_controleur])
-        self.__mvc_createur.ajouter_modele_commun({"jukebox": self.__jukebox_modele, "bluetooth": self.__bluetooth_modele})
-        # EcranDemarrageVue().afficher()
+        # EcranDemarrage().afficher()
 
-        bluetooth_controleur = self.__mvc_createur.creation(BluetoothControleur, EcranBluetooth, {})
-        bluetooth_controleur.lancer()
+        self.__mvc_createur.creation(BluetoothControleur, EcranBluetooth, {}).lancer()
 
         while not self.__jukebox_modele.est_termine():
             recherche_controller = self.__mvc_createur.creation(RechercheControleur, EcranRecherche, {})

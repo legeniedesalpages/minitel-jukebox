@@ -8,6 +8,7 @@ from enum import Enum, auto
 
 
 class PeripheriqueBluetooth:
+    # noinspection PyArgumentList
     class TypeStatut(Enum):
         INCONNU = auto()
         COUPLE = auto()

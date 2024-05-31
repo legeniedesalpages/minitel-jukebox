@@ -194,7 +194,7 @@ class CaracteresMinitel(Enum):
             01111111
     """, "f"
 
-    BLUETOOTH = """
+    BLUETOOTH_ON = """
             00000000
             00011000
             10010100

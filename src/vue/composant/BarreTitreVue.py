@@ -16,39 +16,40 @@ from modele.PeripheriqueBluetooth import PeripheriqueBluetooth
 from service.minitel.MinitelConstante import CaracteresMinitel
 from service.minitel.MinitelExtension import MinitelExtension
 from vue.Affichable import Affichable
-from vue.bidule.Etiquette import Etiquette, Alignement
+from vue.bidule.Etiquette import Etiquette
 from vue.bidule.Sablier import Sablier
+from vue.bidule.Separateur import Separateur
 
 
 class BarreTitreVue(Affichable):
     __notificateur_evenement = inject.attr(Observable)
     __sablier = inject.attr(Sablier)
+    __minitel = inject.attr(Minitel)
+    __minitel_extension = inject.attr(MinitelExtension)
 
-    def __init__(self, minitel: Minitel, titre: str, bluetooth_modele: BluetoothModele):
-        self.__minitel = minitel
+    def __init__(self, titre: str, bluetooth_modele: BluetoothModele):
         self.__titre = titre
-        self.__notificateur_evenement.bind(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE, self._mettre_a_jour_statut_blueooth)
         self.__bluetooth_modele = bluetooth_modele
 
     def afficher(self):
         logging.debug("Affichage barre titre")
-        Etiquette.aligne(Alignement.CENTRE, 1, self.__titre, "blanc").affiche()
-        MinitelExtension.separateur(self.__minitel, 2, "rouge")
+        self.__notificateur_evenement.bind(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE, self._mettre_a_jour_statut_blueooth)
+        Etiquette.centre(posy=1, texte=self.__titre)
+        Separateur.plein(posy=2)
         self._mettre_a_jour_statut_blueooth(self.__bluetooth_modele.peripherique_connecte)
 
     def _mettre_a_jour_statut_blueooth(self, peripehrique: Optional[PeripheriqueBluetooth]):
-        logging.info("Statut bluetooth doit être mis à jour")
+        logging.info(f"Statut bluetooth doit être mis à jour: {peripehrique}")
         sablier_tournait_avant_maj = self.__sablier.arreter()
-        logging.debug(f"Le sablier tournait il avant la maj ? : {sablier_tournait_avant_maj}")
 
-        MinitelExtension.demarrer_affichage_jeu_caractere_redefinit(self.__minitel)
+        self.__minitel_extension.demarrer_affichage_jeu_caractere_redefinit()
         if peripehrique is not None:
-            MinitelExtension.position_couleur(self.__minitel, 1, 1, "blanc")
-            self.__minitel.envoyer(CaracteresMinitel.BLUETOOTH.caractere)
+            self.__minitel_extension.position_couleur(posy=1, posx=1, couleur="blanc")
+            self.__minitel.envoyer(CaracteresMinitel.BLUETOOTH_ON.caractere)
         else:
-            MinitelExtension.position_couleur(self.__minitel, 1, 1, "rouge")
+            self.__minitel_extension.position_couleur(posy=1, posx=1, couleur="rouge")
             self.__minitel.envoyer(CaracteresMinitel.BLUETOOTH_OFF.caractere)
-        MinitelExtension.revenir_jeu_caractere_standard(self.__minitel)
+        self.__minitel_extension.revenir_jeu_caractere_standard()
 
         if sablier_tournait_avant_maj:
             self.__sablier.demarrer()

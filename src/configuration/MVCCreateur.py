@@ -7,12 +7,8 @@ __version__ = "1.0.0"
 import importlib
 from typing import Type, List
 
-import inject
-from minitel.Minitel import Minitel
-
 from controleur.AbstractControleur import AbstractControleur
 from controleur.PeutGererTouche import PeutGererTouche
-from modele.JukeBoxModele import JukeBoxModele
 from vue.AbstractEcran import AbstractEcran
 
 
@@ -20,15 +16,9 @@ class MVCCreateur:
     __controleurs_pouvant_gerer_touche: List[PeutGererTouche]
     __modeles_communs: dict[str, object]
 
-    @inject.autoparams()
-    def __init__(self, jukebox_modele: JukeBoxModele, minitel: Minitel):
-        self.__jukebox_modele = jukebox_modele
-        self.__minitel = minitel
-
-    def ajouter_controleur_commun(self, controleur_pouvant_gerer_touche: List[PeutGererTouche]):
+    def __init__(self, controleur_pouvant_gerer_touche: List[PeutGererTouche], modeles: dict[str, object]):
         self.__controleurs_pouvant_gerer_touche = controleur_pouvant_gerer_touche
-
-    def ajouter_modele_commun(self, modeles: dict[str, object]):
+        self.__jukebox_modele = modeles["jukebox"]
         self.__modeles_communs = modeles
 
     def creation(self, controleur_type: Type[AbstractControleur], vue_type: Type[AbstractEcran], map_modele: dict[str, object]) -> AbstractControleur:
@@ -40,7 +30,6 @@ class MVCCreateur:
         )
 
         vue: AbstractEcran = self.__instanciation(vue_type)(
-            self.__minitel,
             controleur,
             modeles
         )

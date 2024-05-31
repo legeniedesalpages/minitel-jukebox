@@ -15,33 +15,36 @@ from pyobservable import Observable
 
 from controleur.AbstractControleur import AbstractControleur
 from modele.BluetoothModele import BluetoothModele
+from service.minitel.MinitelExtension import MinitelExtension
 from vue.Affichable import Affichable
 from vue.bidule.Sablier import Sablier
+from vue.composant.BarreAudioVue import BarreAudioVue
 from vue.composant.BarreTitreVue import BarreTitreVue
 
 
 class AbstractEcran(Affichable):
     __metaclass__ = abc.ABCMeta
 
-    __sablier = inject.attr(Sablier)
-    __notificateur_evenement = inject.attr(Observable)
+    _sablier = inject.attr(Sablier)
+    _notificateur_evenement = inject.attr(Observable)
+    _minitel: Minitel = inject.attr(Minitel)
+    _minitel_extension: MinitelExtension = inject.attr(MinitelExtension)
 
-    _minitel: Minitel
-    _controleur: AbstractControleur
     __barre_titre_vue: BarreTitreVue
     __bluetooth_modele: BluetoothModele
+    _controleur: AbstractControleur
 
-    def __init__(self, minitel: Minitel, controleur: AbstractControleur, modeles: dict[str, object]):
+    def __init__(self, controleur: AbstractControleur, modeles: dict[str, object]):
         logging.debug("Init vue générique")
-        self._minitel = minitel
         self._controleur = controleur
         # noinspection PyTypeChecker
         self.__bluetooth_modele = modeles["bluetooth"]
+        self.__barre_audio_vue = BarreAudioVue(self._get_callback_curseur)
 
     def afficher(self):
         logging.debug("Affichage vue")
 
-        self.__barre_titre_vue = BarreTitreVue(self._minitel, self._get_titre_ecran(), self.__bluetooth_modele)
+        self.__barre_titre_vue = BarreTitreVue(self._get_titre_ecran(), self.__bluetooth_modele)
         self.__barre_titre_vue.afficher()
         self._affichage_initial()
 
@@ -60,6 +63,7 @@ class AbstractEcran(Affichable):
         self.__fermer()
 
     def __fermer(self):
+        self.__barre_audio_vue.fermer()
         self.__barre_titre_vue.fermer()
         self.fermer()
 
@@ -76,6 +80,10 @@ class AbstractEcran(Affichable):
     @abc.abstractmethod
     def _get_titre_ecran(self) -> str:
         return "Ecran générique"
+
+    @abc.abstractmethod
+    def _get_callback_curseur(self):
+        logging.info("Callback curseur générique")
 
     @abc.abstractmethod
     def fermer(self):

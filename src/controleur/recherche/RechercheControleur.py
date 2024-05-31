@@ -20,5 +20,8 @@ class RechercheControleur(AbstractControleur):
         super().__init__(controleur_pouvant_gerer_touche, modeles)
         logging.debug("Initialisation du controleur de recherche")
 
+    def lancer(self):
+        super().lancer()
+
     def _gere_touche(self, touche: Sequence) -> Optional[bool]:
         return None

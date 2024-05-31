@@ -34,7 +34,7 @@ class RechercheYoutubeVue(AbstractRechercheVue):
 
         titre = "Recherche dans les services ^Youtube^"
         self._conteneur.ajoute(Etiquette.aligne(Alignement.CENTRE, 1, titre, "blanc"))
-        self._minitel_extension.separateur(2, "rouge")
+        self._minitel_extension.plein(2, "rouge")
         self._conteneur.ajoute(Label(self._minitel, 1, 3, "Chanson:", "vert"))
         self.__champ_saisie = ChampTexte(self._minitel, 10, 3, 29, 60, "eye in the sky")
         self._conteneur.ajoute(self.__champ_saisie)

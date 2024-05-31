@@ -38,6 +38,7 @@ class AbstractControleur:
     def enregistrer_vue(self, vue: Affichable):
         self._vue = vue
 
+    @abc.abstractmethod
     def lancer(self):
         self._vue.afficher()
 

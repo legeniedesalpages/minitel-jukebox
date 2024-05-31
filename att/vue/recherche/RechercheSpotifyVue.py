@@ -17,5 +17,5 @@ class RechercheSpotifyVue(AbstractRechercheVue):
 
         self._conteneur.ajoute(
             Etiquette.aligne(Alignement.CENTRE, 1, "Recherche dans les services ^Spotify^", "blanc"))
-        self._minitel_extension.separateur(2, "rouge")
+        self._minitel_extension.plein(2, "rouge")
         self._minitel.curseur(False)

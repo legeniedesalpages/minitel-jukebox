@@ -32,6 +32,7 @@ class BluetoothModele:
 
     def verification_changement_peripherique_apaire(self, nouveau_peripherique_connecte: Optional[PeripheriqueBluetooth]):
         logging.debug(f"avant {self.peripherique_connecte}, apres {nouveau_peripherique_connecte}")
+
         if self.peripherique_connecte is None and nouveau_peripherique_connecte is not None:
             self.peripherique_connecte = nouveau_peripherique_connecte
             self.__notificateur_evenement.notify(self.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE, nouveau_peripherique_connecte)
@@ -50,8 +51,7 @@ class BluetoothModele:
             self.__notificateur_evenement.notify(self.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE, nouveau_peripherique_connecte)
 
         if self.peripherique_connecte is not None:
-            nouvelle_liste[:] = (value for value in nouvelle_liste if
-                                 value.adresse_mac != self.peripherique_connecte.adresse_mac)
+            nouvelle_liste[:] = (value for value in nouvelle_liste if value.adresse_mac != self.peripherique_connecte.adresse_mac)
         nouvelle_liste.sort(key=lambda p: p.nom)
 
         if not self.__est_liste_identique(nouvelle_liste):
@@ -61,8 +61,7 @@ class BluetoothModele:
             self.liste_peripherique = nouvelle_liste
 
             # deselectionne le peripherique selectionne si le peripherique dispartait des peripherique disponible
-            if self.peripherique_selectionne is not None and not any(
-                    x.adresse_mac == self.peripherique_selectionne.adresse_mac for x in self.liste_peripherique):
+            if self.peripherique_selectionne is not None and not any(x.adresse_mac == self.peripherique_selectionne.adresse_mac for x in self.liste_peripherique):
                 self.peripherique_selectionne = None
 
             self.__notificateur_evenement.notify(self.EVENEMENT_LISTE_PERIPHERIQUE_BLUETOOTH_CHANGE, difference_taille if difference_taille > 0 else 0)
@@ -104,8 +103,7 @@ class BluetoothModele:
 
         for i in range(len(self.liste_peripherique)):
             if nouvelle_liste[i].adresse_mac != self.liste_peripherique[i].adresse_mac:
-                logging.debug(
-                    f"Listes différentes : {nouvelle_liste[i].adresse_mac} != {self.liste_peripherique[i].adresse_mac}")
+                logging.debug(f"Listes différentes : {nouvelle_liste[i].adresse_mac} != {self.liste_peripherique[i].adresse_mac}")
                 return False
 
         return True
