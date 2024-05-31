@@ -21,10 +21,11 @@ from controleur.recherche.RechercheControleur import RechercheControleur
 from modele.BluetoothModele import BluetoothModele
 from modele.JukeBoxModele import JukeBoxModele
 from modele.audio.AudioModele import AudioModele
+from modele.wifi.WifiModele import WifiModele
 from service.BluetoothService import BluetoothService
 from service.minitel.MinitelConstante import TOUCHE_ECHAP
+from service.wifi.WifiService import WifiService
 from vue.EcranBluetooth import EcranBluetooth
-from vue.EcranDemarrage import EcranDemarrage
 from vue.bidule.Sablier import Sablier
 from vue.recherche.EcranRecherche import EcranRecherche
 
@@ -36,11 +37,18 @@ class JukeBoxControleur(PeutGererTouche):
     def __init__(self, bluetooth_service: BluetoothService, audio_modele: AudioModele):
         logging.debug("Initialisation du JukeBox")
         self.__jukebox_modele = JukeBoxModele()
+
+        wifi_modele = WifiModele()
+        wifi_service = WifiService()
+        wifi_modele.wifi = wifi_service.recuperer_wifi()
+
         bluetooth_modele = BluetoothModele()
-        self.__titre_controleur = TitreControleur(bluetooth_modele, bluetooth_service)
+
+        self.__titre_controleur = TitreControleur(bluetooth_modele, bluetooth_service, wifi_modele, wifi_service)
         audio_controleur = AudioControleur(audio_modele)
         lecture_controleur = LectureControleur()
-        self.__mvc_createur = MVCCreateur([self, audio_controleur, lecture_controleur], {"jukebox": self.__jukebox_modele, "bluetooth": bluetooth_modele})
+
+        self.__mvc_createur = MVCCreateur([self, audio_controleur, lecture_controleur], {"jukebox": self.__jukebox_modele, "bluetooth": bluetooth_modele, "wifi": wifi_modele})
 
     def demarrer(self):
         logging.info(f"Démarrage du JukeBox")

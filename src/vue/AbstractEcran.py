@@ -15,6 +15,7 @@ from pyobservable import Observable
 
 from controleur.AbstractControleur import AbstractControleur
 from modele.BluetoothModele import BluetoothModele
+from modele.wifi.WifiModele import WifiModele
 from service.minitel.MinitelExtension import MinitelExtension
 from vue.Affichable import Affichable
 from vue.bidule.Sablier import Sablier
@@ -32,6 +33,7 @@ class AbstractEcran(Affichable):
 
     __barre_titre_vue: BarreTitreVue
     __bluetooth_modele: BluetoothModele
+    __wifi_modele: WifiModele
     _controleur: AbstractControleur
 
     def __init__(self, controleur: AbstractControleur, modeles: dict[str, object]):
@@ -39,12 +41,14 @@ class AbstractEcran(Affichable):
         self._controleur = controleur
         # noinspection PyTypeChecker
         self.__bluetooth_modele = modeles["bluetooth"]
+        # noinspection PyTypeChecker
+        self.__wifi_modele = modeles["wifi"]
         self.__barre_audio_vue = BarreAudioVue(self._get_callback_curseur)
 
     def afficher(self):
         logging.debug("Affichage vue")
 
-        self.__barre_titre_vue = BarreTitreVue(self._get_titre_ecran(), self.__bluetooth_modele)
+        self.__barre_titre_vue = BarreTitreVue(self._get_titre_ecran(), self.__bluetooth_modele, self.__wifi_modele)
         self.__barre_titre_vue.afficher()
         self._affichage_initial()
 

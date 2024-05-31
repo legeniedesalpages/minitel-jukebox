@@ -8,6 +8,7 @@ from pyobservable import Observable
 
 from modele.BluetoothModele import BluetoothModele
 from modele.audio.AudioModele import AudioModele
+from modele.wifi.WifiModele import WifiModele
 
 
 def produire_notificateur_evenement() -> Observable:
@@ -18,5 +19,7 @@ def produire_notificateur_evenement() -> Observable:
     notificateur_evenement.add_event(BluetoothModele.EVENEMENT_LISTE_PERIPHERIQUE_BLUETOOTH_CHANGE)
     notificateur_evenement.add_event(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE)
     notificateur_evenement.add_event(BluetoothModele.EVENEMENT_SELECTION_DANS_LISTE_PERIPHERIQUE_CHANGE)
+
+    notificateur_evenement.add_event(WifiModele.EVENEMENT_WIFI_CHANGE)
 
     return notificateur_evenement

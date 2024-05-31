@@ -13,6 +13,8 @@ from pyobservable import Observable
 
 from modele.BluetoothModele import BluetoothModele
 from modele.PeripheriqueBluetooth import PeripheriqueBluetooth
+from modele.wifi.Wifi import Wifi
+from modele.wifi.WifiModele import WifiModele
 from service.minitel.MinitelConstante import CaracteresMinitel
 from service.minitel.MinitelExtension import MinitelExtension
 from vue.Affichable import Affichable
@@ -27,16 +29,38 @@ class BarreTitreVue(Affichable):
     __minitel = inject.attr(Minitel)
     __minitel_extension = inject.attr(MinitelExtension)
 
-    def __init__(self, titre: str, bluetooth_modele: BluetoothModele):
+    def __init__(self, titre: str, bluetooth_modele: BluetoothModele, wifi_modele: WifiModele):
         self.__titre = titre
         self.__bluetooth_modele = bluetooth_modele
+        self.__wifi_modele = wifi_modele
 
     def afficher(self):
         logging.debug("Affichage barre titre")
         self.__notificateur_evenement.bind(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE, self._mettre_a_jour_statut_blueooth)
+        self.__notificateur_evenement.bind(WifiModele.EVENEMENT_WIFI_CHANGE, self._mettre_a_jour_statut_wifi)
         Etiquette.centre(posy=1, texte=self.__titre)
         Separateur.plein(posy=2)
         self._mettre_a_jour_statut_blueooth(self.__bluetooth_modele.peripherique_connecte)
+        self._mettre_a_jour_statut_wifi(self.__wifi_modele.wifi)
+
+    def _mettre_a_jour_statut_wifi(self, wifi: Optional[Wifi]):
+        logging.info(f"Statut wifi doit être mis à jour: {wifi}")
+        sablier_tournait_avant_maj = self.__sablier.arreter()
+
+        self.__minitel_extension.demarrer_affichage_jeu_caractere_redefinit()
+        self.__minitel.position(colonne=3, ligne=1)
+        if wifi is not None:
+            self.__minitel.couleur(f"{wifi.force * 3 - 2}")
+            logging.debug(f"Wifi force: {wifi.force}")
+            self.__minitel.envoyer(CaracteresMinitel.WIFI_ON.caractere)
+        else:
+            self.__minitel.couleur("1")
+            logging.debug("Pas de wifi")
+            self.__minitel.envoyer(CaracteresMinitel.WIFI_OFF.caractere)
+        self.__minitel_extension.revenir_jeu_caractere_standard()
+
+        if sablier_tournait_avant_maj:
+            self.__sablier.demarrer()
 
     def _mettre_a_jour_statut_blueooth(self, peripehrique: Optional[PeripheriqueBluetooth]):
         logging.info(f"Statut bluetooth doit être mis à jour: {peripehrique}")
@@ -56,3 +80,4 @@ class BarreTitreVue(Affichable):
 
     def fermer(self):
         self.__notificateur_evenement.unbind(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE, self._mettre_a_jour_statut_blueooth)
+        self.__notificateur_evenement.unbind(WifiModele.EVENEMENT_WIFI_CHANGE, self._mettre_a_jour_statut_wifi)
