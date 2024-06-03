@@ -1,3 +1,9 @@
+__authors__ = ("Renaud Balu", "LGDA")
+__contact__ = "renaud_balu@hotmail.com"
+__copyright__ = "Free and Open-source"
+__date__ = "2023-11-20"
+__version__ = "1.0.0"
+
 import logging
 import re
 import subprocess
@@ -10,7 +16,14 @@ class BluetoothService:
 
     def __init__(self):
         self.__process_scan = None
-        logging.info("Initialisation service bluetooth")
+        logging.debug("Initialisation service bluetooth")
+
+    def initialiser(self):
+        logging.info("Initialisation des services bluetooth")
+        process_pairable = subprocess.Popen(["bluetoothctl", "pairable", "on"], stdout=subprocess.PIPE)
+        process_pairable.kill()
+        process_discoverable = subprocess.Popen(["bluetoothctl", "discoverbale", "on"], stdout=subprocess.PIPE)
+        process_discoverable.kill()
 
     def scanner_peripheriques(self):
         logging.info("Lancement du scan des périphériques bluetooth")
@@ -20,17 +33,22 @@ class BluetoothService:
     def arreter_scanner(self):
         logging.debug("Demande d'arrêt du scan des périphériques bluetooth")
         self.__process_scan.terminate()
-        subprocess.Popen(["bluetoothctl", "scan", "off"], stdout=subprocess.PIPE)
+        process_scan_off = subprocess.Popen(["bluetoothctl", "scan", "off"], stdout=subprocess.PIPE)
+        process_scan_off.kill()
         logging.info("Arrêt du scan des périphériques bluetooth")
 
     @staticmethod
-    def deconnecte_peripherique(adresse_mac):
+    def deconnecter_peripherique(adresse_mac):
         logging.debug(f"Deconnecter {adresse_mac}")
         BluetoothService.__operation(["bluetoothctl", "disconnect", adresse_mac], "Successful disconnected")
+
+    @staticmethod
+    def oublier_peripherique(adresse_mac):
+        logging.debug(f"Oublier {adresse_mac}")
         BluetoothService.__operation(["bluetoothctl", "remove", adresse_mac], "Device has been removed")
 
     @staticmethod
-    def associer(adresse_mac):
+    def associer_peripherique(adresse_mac):
         logging.debug(f"associer {adresse_mac}")
         BluetoothService.__operation(["bluetoothctl", "pair", adresse_mac], "Pairing successful")
         BluetoothService.__operation(["bluetoothctl", "trust", adresse_mac], "trust succeeded")
@@ -40,26 +58,29 @@ class BluetoothService:
     @staticmethod
     def peripherique_connecte() -> Optional[PeripheriqueBluetooth]:
         logging.debug("Recherche du peripherique connecté")
-        proc_liste_appaire = subprocess.Popen(["bluetoothctl", "paired-devices"], stdout=subprocess.PIPE)
-        lines = proc_liste_appaire.stdout.readlines()
-        logging.debug(f"Nombre de peripherique appairés: {len(lines)}")
+        process_paired_devices = subprocess.Popen(["bluetoothctl", "paired-devices"], stdout=subprocess.PIPE)
+        paired_devices_lines = process_paired_devices.stdout.readlines()
+        logging.debug(f"Nombre de peripherique appairés: {len(paired_devices_lines)}")
+        process_paired_devices.kill()
 
-        for line in lines:
-            peripherique_parse = re.search(r"Device\s([A-Z0-9:]*)\s(.*)", line.decode('utf-8')).groups()
-            peripherique_appaire = PeripheriqueBluetooth(
-                peripherique_parse[1],
-                peripherique_parse[0],
-                PeripheriqueBluetooth.TypeStatut.INCONNU)
+        for line in paired_devices_lines:
+            peripherique_parse = re.search(r"Device\s([A-Z0-9:]*)\s(.*)", line.decode('utf-8'))
+            if peripherique_parse is not None:
+                peripherique_parse_group = peripherique_parse.groups()
+                peripherique_appaire = PeripheriqueBluetooth(
+                    peripherique_parse_group[1],
+                    peripherique_parse_group[0],
+                    PeripheriqueBluetooth.TypeStatut.INCONNU)
 
-            logging.debug(f"Peripherique connus: {peripherique_parse}")
-            proc_info = subprocess.Popen(["bluetoothctl", "info", peripherique_appaire.adresse_mac],
-                                         stdout=subprocess.PIPE)
-            lines_info = proc_info.stdout.readlines()
-            if [i for i in lines_info if b"Connected: yes" in i]:
-                logging.debug(f" -> connecté !")
-                return peripherique_appaire
-            else:
-                logging.debug(f" -> mais pas connecté")
+                logging.debug(f"Peripherique connus: {peripherique_parse}")
+                process_info = subprocess.Popen(["bluetoothctl", "info", peripherique_appaire.adresse_mac], stdout=subprocess.PIPE)
+                lines_info = process_info.stdout.readlines()
+                process_info.kill()
+                if [i for i in lines_info if b"Connected: yes" in i]:
+                    logging.debug(f" -> connecté !")
+                    return peripherique_appaire
+                else:
+                    logging.debug(f" -> mais pas connecté")
 
         logging.debug("Aucun peripherique connecté trouvé")
         return None
@@ -67,18 +88,18 @@ class BluetoothService:
     @staticmethod
     def lister_peripheriques() -> List[PeripheriqueBluetooth]:
         logging.debug("Début du listing des périphériques trouvés")
-        proc = subprocess.Popen(["bluetoothctl", "devices"], stdout=subprocess.PIPE)
+        process_devices = subprocess.Popen(["bluetoothctl", "devices"], stdout=subprocess.PIPE)
         liste_peripherique_trouve = []
-        lines = proc.stdout.readlines()
-        logging.info(f"Nombre de périphériques trouvées : {len(lines)}")
+        lines = process_devices.stdout.readlines()
+        process_devices.kill()
+        logging.info(f"Nombre de périphériques bluetooth trouvées : {len(lines)}")
         for peripherique_brut in lines:
-            peripherique_parse = re.search(r"Device\s([A-Z0-9:]*)\s(.*)", peripherique_brut.decode('utf-8')).groups()
-            peripherique = PeripheriqueBluetooth(
-                peripherique_parse[1],
-                peripherique_parse[0],
-                PeripheriqueBluetooth.TypeStatut.INCONNU)
+            peripherique_parse = re.search(r"Device\s([A-Z0-9:]*)\s(.*)", peripherique_brut.decode('utf-8'))
+            if peripherique_parse is not None:
+                peripherique_parse_group = peripherique_parse.groups()
+                peripherique = PeripheriqueBluetooth(peripherique_parse_group[1], peripherique_parse_group[0], PeripheriqueBluetooth.TypeStatut.INCONNU)
+                liste_peripherique_trouve.append(peripherique)
 
-            liste_peripherique_trouve.append(peripherique)
         logging.debug("Fin du listing des périphériques trouvés")
         return liste_peripherique_trouve
 
@@ -90,5 +111,6 @@ class BluetoothService:
         if [i for i in lignes_resultat if str.encode(chaine_resultat_attendu) in i]:
             logging.debug(f"Résultat {chaine_resultat_attendu} trouvé!")
             return True
-        logging.debug(f"Résultat {chaine_resultat_attendu} non trouvé dans : {lignes_resultat}")
+        logging.debug(f"Résultat attendu '{chaine_resultat_attendu}' non trouvé dans : {lignes_resultat}")
+        process.kill()
         return False

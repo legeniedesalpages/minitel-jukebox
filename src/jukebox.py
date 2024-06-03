@@ -5,36 +5,40 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 import logging
+
 import inject
 from minitel.Minitel import Minitel
 from pyobservable import Observable
 
 from configuration.EvenementConfiguration import produire_notificateur_evenement
 from controleur.JukeBoxControleur import JukeBoxControleur
-from service.audio.AudioConfiguration import produire_audio_service
-from service.audio.AudioService import AudioService
-from service.minitel.MinitelConfiguration import produire_minitel, produire_minitel_extension
-from service.minitel.MinitelExtension import MinitelExtension
+from controleur.composant.LecteurControleur import LecteurControleur
+from modele.ListeLectureModele import ListeLectureModele
+from service.VlcService import VlcService
+from service.minitel.MinitelConfiguration import produire_minitel
 
 
-def my_config(binder):
+def jukebox_inject_config(binder):
     logging.debug("Configuration de l'injecteur de dépendance")
-    minitel = produire_minitel()
-    binder.bind(Minitel, minitel)
-    binder.bind(MinitelExtension, produire_minitel_extension(minitel))
-    binder.bind(AudioService, produire_audio_service())
+    binder.bind(Minitel, produire_minitel())
     binder.bind(Observable, produire_notificateur_evenement())
+    liste_lecture_modele = ListeLectureModele()
+    binder.bind(ListeLectureModele, liste_lecture_modele)
+    lecteur_controleur = LecteurControleur(liste_lecture_modele)
+    binder.bind(LecteurControleur, lecteur_controleur)
+    vlc_service = VlcService(lecteur_controleur)
+    binder.bind(VlcService, vlc_service)
 
 
 if __name__ == '__main__':
 
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.WARNING,
         format="%(asctime)s [%(levelname)-5s] %(filename)s:%(lineno)d -> %(message)s"
     )
 
     logging.info("Lancement du Jukebox Minitel")
-    inject.configure(my_config)
+    inject.configure(jukebox_inject_config)
 
     juke_box = JukeBoxControleur()
     try:

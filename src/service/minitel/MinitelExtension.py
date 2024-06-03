@@ -4,14 +4,13 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
+import inject
 from minitel.Minitel import Minitel
 from minitel.constantes import ESC
 
 
 class MinitelExtension:
-
-    def __init__(self, minitel: Minitel):
-        self.__minitel = minitel
+    __minitel = inject.attr(Minitel)
 
     def demarrer_affichage_jeu_caractere_redefinit(self):
         self.__minitel.envoyer([ESC, 0x28, 0x20, 0x42])
@@ -23,7 +22,14 @@ class MinitelExtension:
         self.__minitel.position(posx, posy)
         self.__minitel.couleur(couleur)
 
-    def separateur(self, posy, couleur):
+    def envoyer_ligne(self, posy, texte, couleur="blanc", inversion=False):
+        self.position_couleur(1, posy, couleur)
+        sequence = texte[:39].ljust(39, " ")
+        if inversion:
+            self.__minitel.effet(inversion=True)
+        self.__minitel.envoyer(sequence)
+        self.__minitel.effet(inversion=False)
+
+    def effacer_ligne(self, posy):
         self.__minitel.position(1, posy)
-        self.__minitel.couleur(couleur)
-        self.__minitel.repeter(0x60, 40)
+        self.__minitel.repeter(" ", 39)

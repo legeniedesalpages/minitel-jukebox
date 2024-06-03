@@ -4,14 +4,15 @@ __copyright__ = "Free and Open-source"
 __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
+import logging
+import math
 from enum import Enum, auto
 
 import inject
-import math
 from minitel.Minitel import Minitel
-from minitel.ui.UI import UI
 
 
+# noinspection PyArgumentList
 class Alignement(Enum):
     GAUCHE = auto(),
     DROITE = auto(),
@@ -19,46 +20,46 @@ class Alignement(Enum):
     AUCUN = auto(),
 
 
-class Etiquette(UI):
+class Etiquette:
     __minitel = inject.attr(Minitel)
 
-    def __init__(self, posx, posy, valeur: str, couleur_texte=None, alignement=Alignement.AUCUN):
-        len_valeur_brut = len(valeur.replace("^", ""))
+    def __init__(self, posx, posy, texte: str, couleur_texte=None, alignement=Alignement.AUCUN):
+        logging.debug(f"Initialisation d'une étiquette {texte}")
+        self.__posy = posy
+        len_valeur_brut = len(texte.replace("^", ""))
         if alignement is Alignement.AUCUN:
-            x = posx
+            self.__posx = posx
         elif alignement is Alignement.GAUCHE:
-            x = 1
+            self.__posx = 1
         elif alignement is Alignement.DROITE:
-            x = 41 - len_valeur_brut
+            self.__posx = 40 - len_valeur_brut
         else:
-            x = math.ceil((41 - len_valeur_brut) / 2)
+            self.__posx = math.ceil((40 - len_valeur_brut) / 2)  # Alignement.CENTRE
 
-        UI.__init__(self, self.__minitel, x, posy, len_valeur_brut, 1, couleur_texte)
-
-        self.__texte = valeur
+        self.__texte = texte
 
         if couleur_texte is None:
             self.__couleur_texte = "blanc"
         else:
             self.__couleur_texte = couleur_texte
 
-    @classmethod
-    def aligne(cls, alignement: Alignement, posy, valeur, couleur_texte=None):
-        return cls(0, posy, valeur, couleur_texte, alignement)
-
-    def gere_touche(self, sequence):
-        return False
-
     def affiche(self):
-        self.__minitel.position(self.posx, self.posy)
+        self.__minitel.position(self.__posx, self.__posy)
         self.__minitel.couleur(self.__couleur_texte)
         flip_flop = False
         for mot in self.__texte.split("^"):
-            if len(mot) > 0 and mot[0] == '_':
-                mot = mot[1:]
-                clignotant = True
-            else:
-                clignotant = False
-            self.__minitel.effet(inversion=flip_flop, clignotement=clignotant)
+            self.__minitel.effet(inversion=flip_flop)
             self.__minitel.envoyer(mot)
             flip_flop = not flip_flop
+
+    @classmethod
+    def gauche(cls, posy, texte, couleur_texte="blanc"):
+        return cls(0, posy, texte, couleur_texte, Alignement.GAUCHE).affiche()
+
+    @classmethod
+    def droite(cls, posy, texte, couleur_texte="blanc"):
+        return cls(0, posy, texte, couleur_texte, Alignement.DROITE).affiche()
+
+    @classmethod
+    def centre(cls, posy, texte, couleur_texte="blanc"):
+        return cls(0, posy, texte, couleur_texte, Alignement.CENTRE).affiche()

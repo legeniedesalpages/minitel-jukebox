@@ -20,3 +20,14 @@ pip install pyalsaaudio<br/>
 récuperer le projet<br/>
 https://github.com/Zigazou/PyMinitel <br/>
 sudo python setup.py install<br/>
+
+# Après démarrage du minitel
+
+Fct+Sommaire<br/>
+Fct+T V<br/>
+Fct+P 9<br/>
+
+# Si 403
+./home/pi/.local/
+youtube-dl --rm-cache-dir
+passage à : pip install yt-dlp --upgrade

@@ -10,7 +10,6 @@ from minitel.Minitel import Minitel
 from minitel.constantes import PRO1, RESET
 
 from service.minitel.MinitelConstante import CaracteresMinitel
-from service.minitel.MinitelExtension import MinitelExtension
 
 
 def produire_minitel() -> Minitel:
@@ -31,9 +30,3 @@ def produire_minitel() -> Minitel:
     minitel.recevoir_sequence(bloque=True, attente=None)
 
     return minitel
-
-
-def produire_minitel_extension(minitel: Minitel) -> MinitelExtension:
-    minitel_extension = MinitelExtension(minitel)
-    minitel_extension.revenir_jeu_caractere_standard()
-    return minitel_extension

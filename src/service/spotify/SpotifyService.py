@@ -10,7 +10,7 @@ import logging
 import requests
 
 
-class RechercheService:
+class SpotifyService:
     __CLIENT_ID_SPOTIFY = "0372daea8b3a496ab5c2ec4dc6e2bd8a"
     __CLIENT_SECRET_SPOTIFY = "220ef945caf54c05817f6feab1315774"
     __USER_ID = "31meuagwwtxgaq7pzvbcpdhozz7u"
