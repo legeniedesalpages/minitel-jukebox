@@ -9,6 +9,7 @@ from enum import Enum
 from minitel.Sequence import Sequence
 
 TOUCHE_ECHAP = Sequence(27)
+TOUCHE_ESPACE = Sequence(32)
 TOUCHE_SHIFT_HAUT = Sequence([27, 91, 77])
 TOUCHE_SHIFT_BAS = Sequence([27, 91, 76])
 
@@ -245,3 +246,42 @@ class CaracteresMinitel(Enum):
         00000100
         00001000
     """, "W"
+
+    STATUT_LECTURE = """
+        00000000
+        01000000
+        01100000
+        01010000
+        01001000
+        01000100
+        01001000
+        01010000
+        01100000
+        01000000
+    """, "L"
+
+    STATUT_PAUSE = """
+        00000000
+        11101110
+        10101010
+        10101010
+        10101010
+        10101010
+        10101010
+        10101010
+        11101110
+        00000000
+    """, "P"
+
+    STATUT_STOP = """
+        00000000
+        11111110
+        10000010
+        10000010
+        10000010
+        10000010
+        10000010
+        10000010
+        11111110
+        00000000
+    """, "S"

@@ -12,6 +12,9 @@ from pyobservable import Observable
 
 from configuration.EvenementConfiguration import produire_notificateur_evenement
 from controleur.JukeBoxControleur import JukeBoxControleur
+from controleur.composant.LecteurControleur import LecteurControleur
+from modele.ListeLectureModele import ListeLectureModele
+from service.VlcService import VlcService
 from service.minitel.MinitelConfiguration import produire_minitel
 
 
@@ -19,12 +22,18 @@ def jukebox_inject_config(binder):
     logging.debug("Configuration de l'injecteur de dépendance")
     binder.bind(Minitel, produire_minitel())
     binder.bind(Observable, produire_notificateur_evenement())
+    liste_lecture_modele = ListeLectureModele()
+    binder.bind(ListeLectureModele, liste_lecture_modele)
+    lecteur_controleur = LecteurControleur(liste_lecture_modele)
+    binder.bind(LecteurControleur, lecteur_controleur)
+    vlc_service = VlcService(lecteur_controleur)
+    binder.bind(VlcService, vlc_service)
 
 
 if __name__ == '__main__':
 
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.WARNING,
         format="%(asctime)s [%(levelname)-5s] %(filename)s:%(lineno)d -> %(message)s"
     )
 

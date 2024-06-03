@@ -15,11 +15,13 @@ from pyobservable import Observable
 
 from controleur.AbstractControleur import AbstractControleur
 from modele.BluetoothModele import BluetoothModele
+from modele.ListeLectureModele import ListeLectureModele
 from modele.wifi.WifiModele import WifiModele
 from service.minitel.MinitelExtension import MinitelExtension
 from vue.Affichable import Affichable
 from vue.bidule.Sablier import Sablier
 from vue.composant.BarreAudioVue import BarreAudioVue
+from vue.composant.BarreLectureVue import BarreLectureVue
 from vue.composant.BarreTitreVue import BarreTitreVue
 
 
@@ -32,36 +34,46 @@ class AbstractEcran(Affichable):
     _minitel_extension: MinitelExtension = inject.attr(MinitelExtension)
 
     __barre_titre_vue: BarreTitreVue
+    __barre_lecture: BarreLectureVue
+
     __bluetooth_modele: BluetoothModele
     __wifi_modele: WifiModele
+    __liste_lecture_modele: ListeLectureModele
+
     _controleur: AbstractControleur
 
     def __init__(self, controleur: AbstractControleur, modeles: dict[str, object]):
         logging.debug("Init vue générique")
         self._controleur = controleur
+
         # noinspection PyTypeChecker
         self.__bluetooth_modele = modeles["bluetooth"]
         # noinspection PyTypeChecker
         self.__wifi_modele = modeles["wifi"]
+        # noinspection PyTypeChecker
+        self.__liste_lecture_modele = modeles["liste_lecture"]
+
         self.__barre_audio_vue = BarreAudioVue(self._get_callback_curseur)
 
     def afficher(self):
         logging.debug("Affichage vue")
 
-        self.__barre_titre_vue = BarreTitreVue(self._get_titre_ecran(), self.__bluetooth_modele, self.__wifi_modele)
+        self.__barre_titre_vue = BarreTitreVue(self._get_titre_ecran(), self.__bluetooth_modele, self.__wifi_modele, self._get_callback_curseur)
         self.__barre_titre_vue.afficher()
+
         self._affichage_initial()
 
-        sequence = self.__recupere_sequence()
+        self.__barre_lecture = BarreLectureVue(self.__liste_lecture_modele, self._get_callback_curseur)
+        self.__barre_lecture.afficher()
+
         while True:
-            logging.debug(f"Touche {sequence.valeurs}")
+            touche = self.__recupere_sequence()
+            logging.debug(f"Touche {touche.valeurs}")
 
-            if sequence.longueur > 0:
-                if self._controleur.gere_touche(sequence):
-                    break
-
-            # on se remet en attente de la prochaine touche
-            sequence = self.__recupere_sequence()
+            if touche.longueur > 0:
+                if not self._gere_touche(touche):
+                    if self._controleur.gere_touche(touche):
+                        break
 
         self._minitel.efface('vraimenttout')
         self.__fermer()
@@ -69,6 +81,7 @@ class AbstractEcran(Affichable):
     def __fermer(self):
         self.__barre_audio_vue.fermer()
         self.__barre_titre_vue.fermer()
+        self.__barre_lecture.fermer()
         self.fermer()
 
     def __recupere_sequence(self) -> Sequence:
@@ -88,6 +101,10 @@ class AbstractEcran(Affichable):
     @abc.abstractmethod
     def _get_callback_curseur(self):
         logging.info("Callback curseur générique")
+
+    @abc.abstractmethod
+    def _gere_touche(self, touche: Sequence) -> bool:
+        return False
 
     @abc.abstractmethod
     def fermer(self):

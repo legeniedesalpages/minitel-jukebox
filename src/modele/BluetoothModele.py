@@ -93,6 +93,7 @@ class BluetoothModele:
                     change = True
 
         if change:
+            logging.info("Changement de la sélection dans la liste des périphériques")
             self.__notificateur_evenement.notify(self.EVENEMENT_SELECTION_DANS_LISTE_PERIPHERIQUE_CHANGE)
 
     def __est_liste_identique(self, nouvelle_liste: List[PeripheriqueBluetooth]) -> bool:

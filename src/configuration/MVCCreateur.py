@@ -5,7 +5,7 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 import importlib
-from typing import Type, List
+from typing import Type
 
 from controleur.AbstractControleur import AbstractControleur
 from controleur.PeutGererTouche import PeutGererTouche
@@ -13,12 +13,9 @@ from vue.AbstractEcran import AbstractEcran
 
 
 class MVCCreateur:
-    __controleurs_pouvant_gerer_touche: List[PeutGererTouche]
-    __modeles_communs: dict[str, object]
 
-    def __init__(self, controleur_pouvant_gerer_touche: List[PeutGererTouche], modeles: dict[str, object]):
+    def __init__(self, controleur_pouvant_gerer_touche: dict[str, PeutGererTouche], modeles: dict[str, object]):
         self.__controleurs_pouvant_gerer_touche = controleur_pouvant_gerer_touche
-        self.__jukebox_modele = modeles["jukebox"]
         self.__modeles_communs = modeles
 
     def creation(self, controleur_type: Type[AbstractControleur], vue_type: Type[AbstractEcran], map_modele: dict[str, object]) -> AbstractControleur:

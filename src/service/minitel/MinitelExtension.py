@@ -22,10 +22,13 @@ class MinitelExtension:
         self.__minitel.position(posx, posy)
         self.__minitel.couleur(couleur)
 
-    def envoyer_ligne(self, posy, texte, couleur="blanc"):
+    def envoyer_ligne(self, posy, texte, couleur="blanc", inversion=False):
         self.position_couleur(1, posy, couleur)
         sequence = texte[:39].ljust(39, " ")
+        if inversion:
+            self.__minitel.effet(inversion=True)
         self.__minitel.envoyer(sequence)
+        self.__minitel.effet(inversion=False)
 
     def effacer_ligne(self, posy):
         self.__minitel.position(1, posy)

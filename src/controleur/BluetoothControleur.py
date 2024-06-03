@@ -7,7 +7,7 @@ __version__ = "1.0.0"
 import logging
 import threading
 import time
-from typing import List, Optional
+from typing import Optional
 
 import inject
 from minitel.Sequence import Sequence
@@ -24,11 +24,22 @@ class BluetoothControleur(AbstractControleur):
 
     __bluetooth_modele: BluetoothModele
 
-    def __init__(self, controleur_pouvant_gerer_touche: List[PeutGererTouche], modeles: dict[str, object]):
-        super().__init__(controleur_pouvant_gerer_touche, modeles)
+    def __init__(self, controleurs_pouvant_gerer_touche: dict[str, PeutGererTouche], modeles: dict[str, object]):
+        super().__init__(controleurs_pouvant_gerer_touche, modeles)
         logging.debug("bluetooth controleur init")
         # noinspection PyTypeChecker
         self.__bluetooth_modele = modeles["bluetooth"]
+
+        #    ****************************
+        # self.__liste_lecture: ListeLectureModele = modeles["liste_lecture"]
+        # # self.__liste_lecture.ajouter_chanson(Chanson(identifiant_video="", titre="test", duree=0, url_image=""))
+        # # self.__liste_lecture.ajouter_chanson(Chanson(identifiant_video="", titre="test a la limite du bord mais vraiment.", duree=0, url_image=""))
+        # # self.__liste_lecture.ajouter_chanson(Chanson(identifiant_video="", titre="test sdf sdf sd fs df sdf s df sd f sf s df s df sd f sdf s df s df sd f sdf s df", duree=0, url_image=""))
+        # self.__liste_lecture.chanson_suivante()
+        # self.__liste_lecture.progression_chanson_courante = None
+        # self.__liste_lecture.est_en_pause = False
+        #    ****************************
+
         self.__fin_rafraichissement_liste_peripherique = False
 
     def lancer(self):
@@ -62,9 +73,11 @@ class BluetoothControleur(AbstractControleur):
             logging.debug("Sommaire ecran bluetooth: on ne sort pas")
             return False
         if touche.egale(BAS):
+            logging.debug("Descendre dans la liste des peripheriques")
             self.__descend()
             return False
         elif touche.egale(HAUT):
+            logging.debug("Monte dans la liste des peripheriques")
             self.__monte()
             return False
         elif touche.egale(ENVOI) or touche.egale(ENTREE):

@@ -19,15 +19,17 @@ class AbstractControleur:
 
     _vue: Optional[Affichable]
 
-    def __init__(self, controleur_pouvant_gerer_touche: List[PeutGererTouche], modeles: dict[str, object]):
+    def __init__(self, controleurs_pouvant_gerer_touche: dict[str, PeutGererTouche], modeles: dict[str, object]):
         logging.debug("Controleur générique créé")
-        self._controleur_pouvant_gerer_touche = controleur_pouvant_gerer_touche
+        self._controleur_pouvant_gerer_touche: List[PeutGererTouche] = list(controleurs_pouvant_gerer_touche.values())
 
     def gere_touche(self, sequence: Sequence) -> Optional[bool]:
         gestion_specifique = self._gere_touche(sequence)
+        logging.debug(f"Controleur générique gere_touche {gestion_specifique}")
         if gestion_specifique is None:
             for controleur_pouvant_gerer_toucher in self._controleur_pouvant_gerer_touche:
                 retour = controleur_pouvant_gerer_toucher.gere_touche(sequence)
+                logging.debug(f"Controleur générique gere_touche {retour} de {controleur_pouvant_gerer_toucher}")
                 if retour is not None:
                     return retour
         else:

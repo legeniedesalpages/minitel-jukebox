@@ -29,10 +29,11 @@ class BarreTitreVue(Affichable):
     __minitel = inject.attr(Minitel)
     __minitel_extension = inject.attr(MinitelExtension)
 
-    def __init__(self, titre: str, bluetooth_modele: BluetoothModele, wifi_modele: WifiModele):
+    def __init__(self, titre: str, bluetooth_modele: BluetoothModele, wifi_modele: WifiModele, callback_positionnement_curseur):
         self.__titre = titre
         self.__bluetooth_modele = bluetooth_modele
         self.__wifi_modele = wifi_modele
+        self.__callback_positionnement_curseur = callback_positionnement_curseur
 
     def afficher(self):
         logging.debug("Affichage barre titre")
@@ -62,6 +63,8 @@ class BarreTitreVue(Affichable):
         if sablier_tournait_avant_maj:
             self.__sablier.demarrer()
 
+        self.__callback_positionnement_curseur()
+
     def _mettre_a_jour_statut_blueooth(self, peripehrique: Optional[PeripheriqueBluetooth]):
         logging.info(f"Statut bluetooth doit être mis à jour: {peripehrique}")
         sablier_tournait_avant_maj = self.__sablier.arreter()
@@ -77,6 +80,8 @@ class BarreTitreVue(Affichable):
 
         if sablier_tournait_avant_maj:
             self.__sablier.demarrer()
+
+        self.__callback_positionnement_curseur()
 
     def fermer(self):
         self.__notificateur_evenement.unbind(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE, self._mettre_a_jour_statut_blueooth)

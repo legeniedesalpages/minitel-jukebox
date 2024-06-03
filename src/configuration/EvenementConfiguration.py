@@ -7,6 +7,7 @@ __version__ = "1.0.0"
 from pyobservable import Observable
 
 from modele.BluetoothModele import BluetoothModele
+from modele.ListeLectureModele import ListeLectureModele
 from modele.audio.AudioModele import AudioModele
 from modele.wifi.WifiModele import WifiModele
 
@@ -21,5 +22,11 @@ def produire_notificateur_evenement() -> Observable:
     notificateur_evenement.add_event(BluetoothModele.EVENEMENT_SELECTION_DANS_LISTE_PERIPHERIQUE_CHANGE)
 
     notificateur_evenement.add_event(WifiModele.EVENEMENT_WIFI_CHANGE)
+
+    notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_STOP)
+    notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_PROGRESSE)
+    notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_JOUE)
+    notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_PAUSE)
+    notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_CHANGE_CHANSON)
 
     return notificateur_evenement

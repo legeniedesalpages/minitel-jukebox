@@ -7,6 +7,8 @@ __version__ = "1.0.0"
 import logging
 from typing import Optional
 
+from minitel.Sequence import Sequence
+
 from controleur.BluetoothControleur import BluetoothControleur
 from modele.BluetoothModele import BluetoothModele
 from modele.PeripheriqueBluetooth import PeripheriqueBluetooth
@@ -65,6 +67,7 @@ class EcranBluetooth(AbstractEcran):
         self._sablier.demarrer()
 
     def _changer_selection(self):
+        logging.debug("Affichage du changement de la sélection dans la liste des périphériques")
         self._afficher_liste_peripherique(0)
 
     def _afficher_liste_peripherique(self, nombre_ligne_a_effacer):
@@ -73,9 +76,7 @@ class EcranBluetooth(AbstractEcran):
         for peripherique in self.__bluetooth_modele.liste_peripherique:
             posy += 1
             if self.__bluetooth_modele.peripherique_selectionne is not None and self.__bluetooth_modele.peripherique_selectionne.adresse_mac == peripherique.adresse_mac:
-                self._minitel.effet(inversion=True)
-                self._minitel_extension.envoyer_ligne(posy=posy, texte=f" - {peripherique.nom[:39]}")
-                self._minitel.effet(inversion=False)
+                self._minitel_extension.envoyer_ligne(posy=posy, texte=f" > {peripherique.nom[:39]}", inversion=True)
             else:
                 self._minitel_extension.envoyer_ligne(posy=posy, texte=f" - {peripherique.nom[:39]}")
 
@@ -86,3 +87,6 @@ class EcranBluetooth(AbstractEcran):
 
     def _get_callback_curseur(self):
         pass
+
+    def _gere_touche(self, touche: Sequence) -> bool:
+        return False
