@@ -6,10 +6,13 @@ __version__ = "1.0.0"
 
 import logging
 import unittest
+from unittest.mock import Mock
 
-from modele.Chanson import Chanson
-from modele.ListeLectureModele import ListeLectureModele, ModeRepetition, ModeLecture
-from modele.RecuperateurChanson import RecuperateurChanson
+from pyobservable import Observable
+
+from modele.lecteur.Chanson import Chanson
+from modele.lecteur.ListeLectureModele import ListeLectureModele, EtatLecture
+from service.lecteur.AbstractLecteurService import AbstractLecteurService
 
 
 class ListeLectureModeleTest(unittest.TestCase):
@@ -28,57 +31,66 @@ class ListeLectureModeleTest(unittest.TestCase):
         self.chanson_1 = Chanson("1", "un", "01:00", "http://image/1")
         self.chanson_2 = Chanson("2", "deux", "02:00", "http://image/2")
         self.chanson_3 = Chanson("3", "trois", "03:00", "http://image/3")
+        self.chanson_1_5 = Chanson("1.5", "un point cinq", "04:00", "http://image/1/5")
 
     def test_doit_recuperer_chanson_lecture_simple_sans_repetition(self):
-        recuperateur_chanson = RecuperateurChanson()
-        mode_repetition = ModeRepetition.PAS_DE_REPETITION
-        mode_lecture = ModeLecture.AVANCE
-        liste_lecture_modele = ListeLectureModele(recuperateur_chanson, mode_repetition, mode_lecture)
+        notificateur_evenement = Observable()
+        notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_STOP)
+        notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_PROGRESSE)
+        notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_JOUE)
+        notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_PAUSE)
+        notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_CHANGE_CHANSON)
+        notificateur_evenement.add_event(ListeLectureModele.EVENEMENT_LECTURE_CHARGEMENT)
 
-        self.assertEqual(liste_lecture_modele.chanson_courante(), None)
+        liste_lecture_modele = ListeLectureModele(notificateur_evenement)
+        lecteur_service = AbstractLecteurService(Mock())
+
+        self.assertEqual(None, liste_lecture_modele.chanson_courante())
+        self.assertEqual(None, liste_lecture_modele.jouer_chanson_suivante(lecteur_service))
+        self.assertEqual(None, liste_lecture_modele.jouer_chanson_courante(lecteur_service))
+        self.assertEqual(None, liste_lecture_modele.rejouer_chanson_courante(lecteur_service))
+        self.assertEqual(None, liste_lecture_modele.mettre_en_pause_ou_relancer_chanson(lecteur_service))
+        self.assertEqual(EtatLecture.STOP, liste_lecture_modele.etat_lecture)
 
         liste_lecture_modele.ajouter_chanson(self.chanson_1)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), self.chanson_1)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), None)
+        self.assertEqual(None, liste_lecture_modele.jouer_chanson_suivante(lecteur_service), "Il n'y a pas de chanson suivante à jouer, il n'y a que la chanson courante qui est jouable")
+        self.assertEqual(EtatLecture.STOP, liste_lecture_modele.etat_lecture)
+        self.assertEqual(self.chanson_1, liste_lecture_modele.jouer_chanson_courante(lecteur_service))
+        self.assertEqual(EtatLecture.JOUE, liste_lecture_modele.etat_lecture)
+        liste_lecture_modele.mettre_en_pause_ou_relancer_chanson(lecteur_service)
+        self.assertEqual(EtatLecture.PAUSE, liste_lecture_modele.etat_lecture)
+        liste_lecture_modele.mettre_en_pause_ou_relancer_chanson(lecteur_service)
+        self.assertEqual(EtatLecture.JOUE, liste_lecture_modele.etat_lecture)
+        liste_lecture_modele.arreter_chanson(lecteur_service)
+        self.assertEqual(EtatLecture.STOP, liste_lecture_modele.etat_lecture)
+        liste_lecture_modele.arreter_chanson(lecteur_service)
+        self.assertEqual(EtatLecture.STOP, liste_lecture_modele.etat_lecture, "Si la lecture est déjà stopée on reste dans cet état")
+
+        self.assertEqual(None, liste_lecture_modele.jouer_chanson_suivante(lecteur_service))
+        self.assertEqual(EtatLecture.STOP, liste_lecture_modele.etat_lecture)
 
         liste_lecture_modele.ajouter_chanson(self.chanson_2)
         liste_lecture_modele.ajouter_chanson(self.chanson_3)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), self.chanson_2)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), self.chanson_3)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), None)
+        self.assertEqual(self.chanson_2, liste_lecture_modele.jouer_chanson_suivante(lecteur_service))
+        self.assertEqual(EtatLecture.JOUE, liste_lecture_modele.etat_lecture)
+        self.assertEqual(self.chanson_3, liste_lecture_modele.jouer_chanson_suivante(lecteur_service))
+        self.assertEqual(EtatLecture.JOUE, liste_lecture_modele.etat_lecture)
 
-        self.assertEqual(liste_lecture_modele.chanson_courante(), self.chanson_3)
+        self.assertEqual(None, liste_lecture_modele.jouer_chanson_suivante(lecteur_service))
 
-        self.assertEqual(liste_lecture_modele.chanson_precedente(), self.chanson_2)
-        self.assertEqual(liste_lecture_modele.chanson_precedente(), self.chanson_1)
-        self.assertEqual(liste_lecture_modele.chanson_precedente(), None)
+        self.assertEqual(self.chanson_3, liste_lecture_modele.chanson_courante())
 
-        self.assertEqual(liste_lecture_modele.chanson_courante(), self.chanson_1)
+        self.assertEqual(self.chanson_2, liste_lecture_modele.jouer_chanson_precedente(lecteur_service))
+        self.assertEqual(self.chanson_1, liste_lecture_modele.jouer_chanson_precedente(lecteur_service))
+        self.assertEqual(EtatLecture.JOUE, liste_lecture_modele.etat_lecture)
+        self.assertEqual(None, liste_lecture_modele.jouer_chanson_precedente(lecteur_service))
 
-    def test_doit_recuperer_chanson_lecture_simple_avec_repetition_chanson(self):
-        recuperateur_chanson = RecuperateurChanson()
-        mode_repetition = ModeRepetition.UNE_SEULE_CHANSON
-        mode_lecture = ModeLecture.AVANCE
-        liste_lecture_modele = ListeLectureModele(recuperateur_chanson, mode_repetition, mode_lecture)
+        self.assertEqual(self.chanson_1, liste_lecture_modele.chanson_courante())
+        self.assertEqual(EtatLecture.JOUE, liste_lecture_modele.etat_lecture)
 
-        self.assertEqual(liste_lecture_modele.chanson_courante(), None)
-
-        liste_lecture_modele.ajouter_chanson(self.chanson_1)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), self.chanson_1)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), self.chanson_1)
-
-        liste_lecture_modele.ajouter_chanson(self.chanson_2)
-        liste_lecture_modele.ajouter_chanson(self.chanson_3)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), self.chanson_2)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), self.chanson_3)
-        self.assertEqual(liste_lecture_modele.chanson_suivante(), None)
-
-        self.assertEqual(liste_lecture_modele.chanson_courante(), self.chanson_3)
-
-        self.assertEqual(liste_lecture_modele.chanson_precedente(), self.chanson_2)
-        self.assertEqual(liste_lecture_modele.chanson_precedente(), self.chanson_1)
-        self.assertEqual(liste_lecture_modele.chanson_precedente(), None)
-
-        self.assertEqual(liste_lecture_modele.chanson_courante(), self.chanson_1)
-
-
+        self.assertEqual(self.chanson_1_5, liste_lecture_modele.inserer_puis_jouer_chanson(self.chanson_1_5, lecteur_service))
+        self.assertEqual(EtatLecture.JOUE, liste_lecture_modele.etat_lecture)
+        self.assertEqual(self.chanson_1, liste_lecture_modele.jouer_chanson_precedente(lecteur_service))
+        self.assertEqual(self.chanson_1_5, liste_lecture_modele.jouer_chanson_suivante(lecteur_service))
+        self.assertEqual(self.chanson_2, liste_lecture_modele.jouer_chanson_suivante(lecteur_service))
+        self.assertEqual(EtatLecture.JOUE, liste_lecture_modele.etat_lecture)

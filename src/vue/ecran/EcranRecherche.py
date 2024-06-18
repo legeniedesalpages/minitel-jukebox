@@ -12,7 +12,7 @@ from minitel.ui.ChampTexte import ChampTexte
 from minitel.ui.Label import Label
 
 from controleur.recherche.YoutubeRechercheControleur import YoutubeRechercheControleur
-from vue.AbstractEcran import AbstractEcran
+from vue.commun.AbstractEcran import AbstractEcran
 
 
 class EcranRecherche(AbstractEcran):
@@ -32,6 +32,7 @@ class EcranRecherche(AbstractEcran):
 
     def _gere_touche(self, touche: Sequence) -> bool:
         if self.__champ_saisie.gere_touche(touche):
+            logging.debug(f"Le champ de saisie a pris en charge la touche {touche}")
             return True
 
         elif touche.egale(ENVOI):
@@ -39,7 +40,10 @@ class EcranRecherche(AbstractEcran):
             return False
 
         elif touche.egale(ENTREE):
-            self.__recherche_controleur.rechercher_et_ajouter_chanson(self.__champ_saisie.valeur)
+            if self.__recherche_controleur.rechercher_et_ajouter_chanson(self.__champ_saisie.valeur):
+                self.__champ_saisie.valeur = ""
+                self.__champ_saisie.curseur_x = 0
+                self.__champ_saisie.affiche()
             return False
 
         return False

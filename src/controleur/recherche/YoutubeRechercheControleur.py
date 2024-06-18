@@ -10,22 +10,26 @@ from typing import Optional
 import inject
 from minitel.Sequence import Sequence
 from minitel.constantes import ENVOI, ENTREE
+from pyobservable import Observable
 
-from controleur.AbstractControleur import AbstractControleur
-from controleur.PeutGererTouche import PeutGererTouche
+from controleur.commun.AbstractControleur import AbstractControleur
+from controleur.commun.PeutGererTouche import PeutGererTouche
 from controleur.composant.LecteurControleur import LecteurControleur
-from modele.Chanson import Chanson
-from modele.ListeLectureModele import ListeLectureModele
-from service.VlcService import VlcService
-from service.YoutubeService import YoutubeService
+from modele.lecteur.Chanson import Chanson
+from modele.lecteur.JukeBoxModele import JukeBoxModele, Ecran
+from modele.lecteur.ListeLectureModele import ListeLectureModele
+from service.lecteur.VlcService import VlcService
+from service.lecteur.YoutubeService import YoutubeService
 
 
 class YoutubeRechercheControleur(AbstractControleur):
     __vlc_service = inject.attr(VlcService)
+    __notificateur_evenement = inject.attr(Observable)
 
     __youtube_service: YoutubeService
     __liste_lecture_modele: ListeLectureModele
     __lecteur_controleur: LecteurControleur
+    __jukebox_modele: JukeBoxModele
 
     def __init__(self, controleurs_pouvant_gerer_touche: dict[str, PeutGererTouche], modeles: dict[str, object]):
         super().__init__(controleurs_pouvant_gerer_touche, modeles)
@@ -34,6 +38,8 @@ class YoutubeRechercheControleur(AbstractControleur):
         self.__liste_lecture_modele = modeles["liste_lecture"]
         # noinspection PyTypeChecker
         self.__lecteur_controleur = controleurs_pouvant_gerer_touche["lecteur"]
+        # noinspection PyTypeChecker
+        self.__jukebox_modele = modeles["jukebox"]
 
         self.__youtube_service = YoutubeService(self.__vlc_service)
         self.__lecteur_controleur.definir_lecteur_service(self.__youtube_service)
@@ -49,17 +55,20 @@ class YoutubeRechercheControleur(AbstractControleur):
             return
 
         self.__liste_lecture_modele.inserer_puis_jouer_chanson(chanson, self.__youtube_service)
-        logging.warning(self.__liste_lecture_modele.etat_courant())
+        logging.info(self.__liste_lecture_modele)
 
-    def rechercher_et_ajouter_chanson(self, titre_chanson_a_chercher: str):
+    def rechercher_et_ajouter_chanson(self, titre_chanson_a_chercher: str) -> bool:
 
         chanson = self.__rechercher_chanson(titre_chanson_a_chercher)
         if chanson is None:
             logging.info(f"Pas de chanson trouvée pour le recherche: {titre_chanson_a_chercher}")
-            return
+            self.__notificateur_evenement.notify(JukeBoxModele.EVENEMENT_NOTIFICATION, "Chanson non trouvée")
+            return False
 
         self.__liste_lecture_modele.ajouter_chanson(chanson)
-        logging.warning(self.__liste_lecture_modele.etat_courant())
+        self.__notificateur_evenement.notify(JukeBoxModele.EVENEMENT_NOTIFICATION, "Chanson ajoutée à la liste")
+        logging.info(self.__liste_lecture_modele)
+        return True
 
     def __rechercher_chanson(self, titre_chanson_a_chercher: str) -> Optional[Chanson]:
         logging.info(f"Lancement de la recherche {titre_chanson_a_chercher}")
@@ -74,6 +83,7 @@ class YoutubeRechercheControleur(AbstractControleur):
 
     def _gere_touche(self, touche: Sequence) -> Optional[bool]:
         if touche.egale(ENVOI):
+            self.__jukebox_modele.ecran_demande = Ecran.ECRAN_VISUALISATION
             return True
         if touche.egale(ENTREE):
             return False

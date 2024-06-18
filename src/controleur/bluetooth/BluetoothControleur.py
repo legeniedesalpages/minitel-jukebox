@@ -13,22 +13,26 @@ import inject
 from minitel.Sequence import Sequence
 from minitel.constantes import BAS, HAUT, ENVOI, ENTREE, ANNULATION, SOMMAIRE, SUITE
 
-from controleur.AbstractControleur import AbstractControleur
-from controleur.PeutGererTouche import PeutGererTouche
-from modele.BluetoothModele import BluetoothModele
-from service.BluetoothService import BluetoothService
+from controleur.commun.AbstractControleur import AbstractControleur
+from controleur.commun.PeutGererTouche import PeutGererTouche
+from modele.bluetooth.BluetoothModele import BluetoothModele
+from modele.lecteur.JukeBoxModele import JukeBoxModele, Ecran
+from service.bluetooth.BluetoothService import BluetoothService
 
 
 class BluetoothControleur(AbstractControleur):
     __bluetooth_service: BluetoothService = inject.attr(BluetoothService)
 
     __bluetooth_modele: BluetoothModele
+    __jukebox_modele: JukeBoxModele
 
     def __init__(self, controleurs_pouvant_gerer_touche: dict[str, PeutGererTouche], modeles: dict[str, object]):
         super().__init__(controleurs_pouvant_gerer_touche, modeles)
         logging.debug("bluetooth controleur init")
         # noinspection PyTypeChecker
         self.__bluetooth_modele = modeles["bluetooth"]
+        # noinspection PyTypeChecker
+        self.__jukebox_modele = modeles["jukebox"]
 
         #    ****************************
         # self.__liste_lecture: ListeLectureModele = modeles["liste_lecture"]
@@ -46,7 +50,9 @@ class BluetoothControleur(AbstractControleur):
 
         self.__bluetooth_modele.peripherique_connecte = self.__bluetooth_service.peripherique_connecte()
         if self.__bluetooth_modele.peripherique_connecte is not None:
-            logging.info(f"Peripherique connecte: {self.__bluetooth_modele.peripherique_connecte}, on ne passe pas par l'ecran bluetooth")
+            logging.info(
+                f"Peripherique connecte: {self.__bluetooth_modele.peripherique_connecte}, on ne passe pas par l'ecran bluetooth")
+            self.__jukebox_modele.ecran_demande = Ecran.ECRAN_RECHERCHE
             return
         else:
             logging.info("Affichage de l'ecran bluetooth car il n'y a pas de peripherique connecte")

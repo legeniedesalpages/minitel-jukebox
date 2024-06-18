@@ -9,6 +9,7 @@ from enum import Enum, auto
 import inject
 from minitel.Minitel import Minitel
 
+from service.minitel.MinitelConstante import CaracteresMinitel
 from service.minitel.MinitelExtension import MinitelExtension
 
 
@@ -17,6 +18,7 @@ class Remplissage(Enum):
     PLEIN = auto(),
     MOYEN = auto(),
     LEGER = auto(),
+    BAS = auto(),
 
 
 class Separateur:
@@ -31,6 +33,10 @@ class Separateur:
             self.__minitel_extension.demarrer_affichage_jeu_caractere_redefinit()
             self.__minitel.repeter("-", 39)
             self.__minitel_extension.revenir_jeu_caractere_standard()
+        elif remplissage == Remplissage.BAS:
+            self.__minitel_extension.demarrer_affichage_jeu_caractere_redefinit()
+            self.__minitel.repeter(CaracteresMinitel.SEPARATEUR_BAS.caractere, 39)
+            self.__minitel_extension.revenir_jeu_caractere_standard()
 
     @classmethod
     def plein(cls, posy, couleur="rouge"):
@@ -39,3 +45,8 @@ class Separateur:
     @classmethod
     def leger(cls, posy, couleur="rouge"):
         return cls(posy, couleur, Remplissage.LEGER)
+
+    @classmethod
+    def bas(cls, posy, couleur="rouge"):
+        return cls(posy, couleur, Remplissage.BAS)
+

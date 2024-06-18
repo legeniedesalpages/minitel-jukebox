@@ -9,7 +9,7 @@ import re
 import subprocess
 from typing import List, Optional
 
-from modele.PeripheriqueBluetooth import PeripheriqueBluetooth
+from modele.bluetooth.PeripheriqueBluetooth import PeripheriqueBluetooth
 
 
 class BluetoothService:
@@ -73,7 +73,8 @@ class BluetoothService:
                     PeripheriqueBluetooth.TypeStatut.INCONNU)
 
                 logging.debug(f"Peripherique connus: {peripherique_parse}")
-                process_info = subprocess.Popen(["bluetoothctl", "info", peripherique_appaire.adresse_mac], stdout=subprocess.PIPE)
+                process_info = subprocess.Popen(["bluetoothctl", "info", peripherique_appaire.adresse_mac],
+                                                stdout=subprocess.PIPE)
                 lines_info = process_info.stdout.readlines()
                 process_info.kill()
                 if [i for i in lines_info if b"Connected: yes" in i]:
@@ -97,7 +98,8 @@ class BluetoothService:
             peripherique_parse = re.search(r"Device\s([A-Z0-9:]*)\s(.*)", peripherique_brut.decode('utf-8'))
             if peripherique_parse is not None:
                 peripherique_parse_group = peripherique_parse.groups()
-                peripherique = PeripheriqueBluetooth(peripherique_parse_group[1], peripherique_parse_group[0], PeripheriqueBluetooth.TypeStatut.INCONNU)
+                peripherique = PeripheriqueBluetooth(peripherique_parse_group[1], peripherique_parse_group[0],
+                                                     PeripheriqueBluetooth.TypeStatut.INCONNU)
                 liste_peripherique_trouve.append(peripherique)
 
         logging.debug("Fin du listing des périphériques trouvés")

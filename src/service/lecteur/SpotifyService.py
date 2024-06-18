@@ -9,20 +9,25 @@ import logging
 
 import requests
 
+from service.lecteur.PeutSuggererUneChanson import PeutSuggererUneChanson
 
-class SpotifyService:
-    __CLIENT_ID_SPOTIFY = "0372daea8b3a496ab5c2ec4dc6e2bd8a"
-    __CLIENT_SECRET_SPOTIFY = "220ef945caf54c05817f6feab1315774"
-    __USER_ID = "31meuagwwtxgaq7pzvbcpdhozz7u"
 
-    def __init__(self):
+class SpotifyService(PeutSuggererUneChanson):
+    __CLIENT_ID_SPOTIFY: str
+    __CLIENT_SECRET_SPOTIFY: str
+    __USER_ID: str
+
+    def __init__(self, client_id: str, client_secret: str, user_id: str):
         logging.info("Initialisation wrapper youtube")
+        self.__CLIENT_ID_SPOTIFY = client_id
+        self.__CLIENT_SECRET_SPOTIFY = client_secret
+        self.__USER_ID = user_id
         self.__auth_token_spotify = self.__spotify_auht_token()
         logging.debug(f"Jeton d'authentification spotify: {self.__auth_token_spotify}")
 
     def suggestion(self, titre_chanson: str) -> str:
         logging.debug(f"Recherche du track id de la chanson: {titre_chanson}")
-        # recherche la chanson a partir de laquelle faire une recommandation
+        # recherche la chanson à partir de laquelle faire une recommandation
         res = self.__appel_spotify(f"https://api.spotify.com/v1/search?q={titre_chanson}&type=track&market=FR&limit=1")
         track_id = res.json()["tracks"]["items"][0]["id"]
         logging.debug(f"Track id de la chanson {titre_chanson} => {track_id}")

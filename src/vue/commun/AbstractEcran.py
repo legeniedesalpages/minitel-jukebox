@@ -13,13 +13,13 @@ from minitel.Minitel import Minitel
 from minitel.Sequence import Sequence
 from pyobservable import Observable
 
-from controleur.AbstractControleur import AbstractControleur
-from modele.BluetoothModele import BluetoothModele
-from modele.ListeLectureModele import ListeLectureModele
+from controleur.commun.AbstractControleur import AbstractControleur
+from modele.bluetooth.BluetoothModele import BluetoothModele
+from modele.lecteur.ListeLectureModele import ListeLectureModele
 from modele.wifi.WifiModele import WifiModele
 from service.minitel.MinitelExtension import MinitelExtension
-from vue.Affichable import Affichable
 from vue.bidule.Sablier import Sablier
+from vue.commun.Affichable import Affichable
 from vue.composant.BarreAudioVue import BarreAudioVue
 from vue.composant.BarreLectureVue import BarreLectureVue
 from vue.composant.BarreTitreVue import BarreTitreVue

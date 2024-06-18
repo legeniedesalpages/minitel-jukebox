@@ -9,7 +9,7 @@ from typing import Optional
 
 from minitel.Sequence import Sequence
 
-from controleur.PeutGererTouche import PeutGererTouche
+from controleur.commun.PeutGererTouche import PeutGererTouche
 from modele.audio.AudioModele import AudioModele
 from service.minitel.MinitelConstante import TOUCHE_SHIFT_HAUT, TOUCHE_SHIFT_BAS
 

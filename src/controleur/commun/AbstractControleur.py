@@ -10,8 +10,9 @@ from typing import List, Optional
 
 from minitel.Sequence import Sequence
 
-from controleur.PeutGererTouche import PeutGererTouche
-from vue.Affichable import Affichable
+from controleur.commun.PeutGererTouche import PeutGererTouche
+from modele.lecteur.JukeBoxModele import JukeBoxModele
+from vue.commun.Affichable import Affichable
 
 
 class AbstractControleur:
@@ -22,6 +23,9 @@ class AbstractControleur:
     def __init__(self, controleurs_pouvant_gerer_touche: dict[str, PeutGererTouche], modeles: dict[str, object]):
         logging.debug("Controleur générique créé")
         self._controleur_pouvant_gerer_touche: List[PeutGererTouche] = list(controleurs_pouvant_gerer_touche.values())
+        # noinspection PyTypeChecker
+        self.__jukebox_modele: JukeBoxModele = modeles["jukebox"]
+        self.__jukebox_modele.switch_ecran()
 
     def gere_touche(self, sequence: Sequence) -> Optional[bool]:
         gestion_specifique = self._gere_touche(sequence)

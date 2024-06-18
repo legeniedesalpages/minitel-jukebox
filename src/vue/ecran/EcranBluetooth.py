@@ -9,10 +9,10 @@ from typing import Optional
 
 from minitel.Sequence import Sequence
 
-from controleur.BluetoothControleur import BluetoothControleur
-from modele.BluetoothModele import BluetoothModele
-from modele.PeripheriqueBluetooth import PeripheriqueBluetooth
-from vue.AbstractEcran import AbstractEcran
+from controleur.bluetooth.BluetoothControleur import BluetoothControleur
+from modele.bluetooth.BluetoothModele import BluetoothModele
+from modele.bluetooth.PeripheriqueBluetooth import PeripheriqueBluetooth
+from vue.commun.AbstractEcran import AbstractEcran
 from vue.bidule.Etiquette import Etiquette
 from vue.bidule.Separateur import Separateur
 
@@ -23,7 +23,7 @@ class EcranBluetooth(AbstractEcran):
 
     def __init__(self, bluetooth_controleur: BluetoothControleur, modeles: dict[str, object]):
         super().__init__(bluetooth_controleur, modeles)
-        logging.info("Bluetooth vue init")
+        logging.debug("Bluetooth vue init")
         # noinspection PyTypeChecker
         self.__bluetooth_modele = modeles["bluetooth"]
         self.__bluetooth_controleur = bluetooth_controleur

@@ -7,9 +7,9 @@ __version__ = "1.0.0"
 import importlib
 from typing import Type
 
-from controleur.AbstractControleur import AbstractControleur
-from controleur.PeutGererTouche import PeutGererTouche
-from vue.AbstractEcran import AbstractEcran
+from controleur.commun.AbstractControleur import AbstractControleur
+from controleur.commun.PeutGererTouche import PeutGererTouche
+from vue.commun.AbstractEcran import AbstractEcran
 
 
 class MVCCreateur:
@@ -18,7 +18,8 @@ class MVCCreateur:
         self.__controleurs_pouvant_gerer_touche = controleur_pouvant_gerer_touche
         self.__modeles_communs = modeles
 
-    def creation(self, controleur_type: Type[AbstractControleur], vue_type: Type[AbstractEcran], map_modele: dict[str, object]) -> AbstractControleur:
+    def creation(self, controleur_type: Type[AbstractControleur], vue_type: Type[AbstractEcran],
+                 map_modele: dict[str, object]) -> AbstractControleur:
         modeles = map_modele | self.__modeles_communs
 
         controleur: AbstractControleur = self.__instanciation(controleur_type)(

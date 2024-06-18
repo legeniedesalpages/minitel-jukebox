@@ -7,15 +7,19 @@ __version__ = "1.0.0"
 import logging
 from typing import List
 
-from pafy import pafy
+import inject
+from pyobservable import Observable
 from youtubesearchpython import VideosSearch
+from yt_dlp import YoutubeDL
 
-from modele.Chanson import Chanson
-from service.AbstractLecteurService import AbstractLecteurService
-from service.VlcService import VlcService
+from modele.lecteur.Chanson import Chanson
+from modele.lecteur.JukeBoxModele import JukeBoxModele
+from service.lecteur.AbstractLecteurService import AbstractLecteurService
+from service.lecteur.VlcService import VlcService
 
 
 class YoutubeService(AbstractLecteurService):
+    __notificateur_evenement = inject.attr(Observable)
 
     def __init__(self, vlc_service: VlcService):
         super().__init__(vlc_service)
@@ -39,6 +43,13 @@ class YoutubeService(AbstractLecteurService):
         return retour
 
     def jouer(self, chanson: Chanson):
-        video = pafy.new(chanson.url_stream)
-        best = video.getbestaudio()
-        self._vlc_service.jouer(best.url)
+        logging.debug(f"YDL, tentative de récupération chanson: {chanson}")
+        ydl_opts = {'format': 'bestaudio'}
+        with YoutubeDL(ydl_opts) as ydl:
+            try:
+                info = ydl.extract_info(chanson.url_stream, download=False)
+                logging.info(f"Found from ydl: {info}")
+                self._vlc_service.jouer(info['url'])
+            except Exception as e:
+                logging.error(f"Erreur lors de la récupération de la chanson: {e}")
+                self.__notificateur_evenement.notify(JukeBoxModele.EVENEMENT_NOTIFICATION, str(e))

@@ -6,8 +6,8 @@ __version__ = "1.0.0"
 
 import abc
 
-from modele.Chanson import Chanson
-from service.VlcService import VlcService
+from modele.lecteur.Chanson import Chanson
+from service.lecteur.VlcService import VlcService
 
 
 class AbstractLecteurService:
@@ -30,3 +30,9 @@ class AbstractLecteurService:
 
     def arreter(self):
         return self._vlc_service.arreter()
+
+    def avancer(self):
+        return self._vlc_service.avancer()
+
+    def reculer(self):
+        return self._vlc_service.reculer()

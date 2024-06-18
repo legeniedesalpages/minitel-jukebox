@@ -18,7 +18,7 @@ class WifiService:
         pass
 
     def recuperer_wifi(self) -> Optional[Wifi]:
-        process = subprocess.Popen(["iwconfig"], stdout=subprocess.PIPE)
+        process = subprocess.Popen(["iwconfig"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         lignes_brut: List[AnyStr] = process.stdout.readlines()
         process.kill()
 

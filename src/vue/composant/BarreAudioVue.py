@@ -67,7 +67,7 @@ class BarreAudioVue:
             if ancienne_position == 0 or position == 0 or self.__visible is False:
                 self.__minitel_extension.position_couleur(BarreAudioVue.__POS_X, BarreAudioVue.__POS_Y, BarreAudioVue.__COULEUR)
                 if volume == AudioModele.MAX_VOLUME:
-                    logging.warning("Volume max")
+                    logging.info("Volume max")
                     self.__minitel.envoyer(CaracteresMinitel.BARRE_HAUT_PLEIN.caractere)
                 else:
                     self.__minitel.envoyer(CaracteresMinitel.BARRE_HAUT_VIDE.caractere)

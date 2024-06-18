@@ -21,6 +21,17 @@ récuperer le projet<br/>
 https://github.com/Zigazou/PyMinitel <br/>
 sudo python setup.py install<br/>
 
+# creer un fichier dans "ressources/jukebox.ini" avec le contenu suivant
+```
+[spotify]
+clientId = 
+clientSecret = 
+userId = 
+
+[gemini]
+apiKey =
+``` 
+
 # Après démarrage du minitel
 
 Fct+Sommaire<br/>

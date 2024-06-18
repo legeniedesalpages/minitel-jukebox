@@ -7,16 +7,17 @@ __version__ = "1.0.0"
 import logging
 import threading
 
-from modele.BluetoothModele import BluetoothModele
+from modele.bluetooth.BluetoothModele import BluetoothModele
 from modele.wifi.WifiModele import WifiModele
-from service.BluetoothService import BluetoothService
+from service.bluetooth.BluetoothService import BluetoothService
 from service.wifi.WifiService import WifiService
 
 
 class TitreControleur:
     __evenement_attente: threading.Event
 
-    def __init__(self, __bluetooth_modele: BluetoothModele, __bluetooth_service: BluetoothService, __wifi_modele: WifiModele, __wifi_service: WifiService):
+    def __init__(self, __bluetooth_modele: BluetoothModele, __bluetooth_service: BluetoothService,
+                 __wifi_modele: WifiModele, __wifi_service: WifiService):
         logging.debug("Démarrage du titre controleur")
         self.__bluetooth_modele = __bluetooth_modele
         self.__bluetooth_service = __bluetooth_service
@@ -28,7 +29,8 @@ class TitreControleur:
     def _raffraichissement(self):
         self.__evenement_attente = threading.Event()
         while not self.__fin_raffraichissement:
-            if not self.__evenement_attente.wait(timeout=10):
+            # todo : fixer le timeout
+            if not self.__evenement_attente.wait(timeout=1000):
                 peripherique = self.__bluetooth_service.peripherique_connecte()
                 logging.debug(f"Recherche une mise à jour état bluetooth {peripherique}")
                 self.__bluetooth_modele.verification_changement_peripherique_apaire(peripherique)

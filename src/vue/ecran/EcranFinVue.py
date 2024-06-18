@@ -7,7 +7,7 @@ __version__ = "1.0.0"
 import inject
 from minitel.Minitel import Minitel
 
-from vue.Affichable import Affichable
+from vue.commun.Affichable import Affichable
 
 
 class EcranFinVue(Affichable):
