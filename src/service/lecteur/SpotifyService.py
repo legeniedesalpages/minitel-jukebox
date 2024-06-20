@@ -52,8 +52,11 @@ class SpotifyService(PeutSuggererUneChanson):
     def liste_chansons_bibliotheque(self, bibliotheque: BibliothequeSpotify) -> List[Chanson]:
         resultat = self.__appel_spotify(f"https://api.spotify.com/v1/playlists/{bibliotheque.identifiant}/tracks")
         liste_chansons: List[Chanson] = []
+        logging.debug(f"Récupération des chansons de la playlist {resultat.json()}")
         for chanson in resultat.json()["items"]:
-            liste_chansons.append(Chanson(titre=f"{chanson['track']['name']} - {chanson['track']['artists'][0]['name']}"))
+            logging.debug(f"Chanson {chanson}")
+            if chanson['track'] is not None:
+                liste_chansons.append(Chanson(titre=f"{chanson['track']['name']} - {chanson['track']['artists'][0]['name']}"))
         return liste_chansons
 
     def __appel_spotify(self, url):
