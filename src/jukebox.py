@@ -34,9 +34,9 @@ def jukebox_inject_config(binder):
     liste_lecture_modele = ListeLectureModele(notificateur_evenement)
     binder.bind(ListeLectureModele, liste_lecture_modele)
     spotify_service = SpotifyService(
-        client_id=config.get("spotify", "client_id"),
-        client_secret=config.get("spotify", "client_secret"),
-        user_id=config.get("spotify", "user_id")
+        client_id=config.get("spotify", "clientId"),
+        client_secret=config.get("spotify", "clientSecret"),
+        user_id=config.get("spotify", "userId")
     )
     binder.bind(SpotifyService, spotify_service)
     lecteur_controleur = LecteurControleur(liste_lecture_modele, spotify_service)
@@ -49,7 +49,8 @@ def jukebox_inject_config(binder):
     binder.bind(YoutubeService, youtube_service)
     lecteur_controleur.set_youtube_service(youtube_service)
 
-    gemini_service = GeminiService(api_key=config.get("gemini", "api_key"))
+    gemini_service = GeminiService(api_key=config.get("gemini", "apiKey"))
+    binder.bind(GeminiService, gemini_service)
 
 
 if __name__ == '__main__':

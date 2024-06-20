@@ -13,8 +13,9 @@ class Ecran(Enum):
     ECRAN_VISUALISATION = auto(),
     ECRAN_BLUETOOTH = auto(),
     ECRAN_LISTE_LECTURE = auto(),
-    ECRAN_RECHERCHE = auto()
-    ECRAN_GUIDE = auto()
+    ECRAN_RECHERCHE = auto(),
+    ECRAN_GUIDE = auto(),
+    ECRAN_BIBLIOTHEQUE_SPOTIFY = auto()
 
 
 class JukeBoxModele:

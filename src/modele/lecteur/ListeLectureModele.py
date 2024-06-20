@@ -5,6 +5,7 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 import logging
+import random
 import typing
 from enum import auto, Enum
 from typing import List
@@ -51,29 +52,15 @@ class ListeLectureModele:
 
     def __init__(self, notificateur_evenement: Observable):
         self.liste_lecture = []
-        # for i in range(0, 190):
-        #     self.liste_lecture.append(Chanson("Chanson " + str(i+1), "Artiste " + str(i+1), "Album " + str(i), "Fichier " + str(i)))
-
-        # self.liste_lecture.append(
-        #     Chanson(identifiant_video="_YqzuE-5RE8", url_image="https://i.ytimg.com/vi/_YqzuE-5RE8/hqdefault.jpg",
-        #             titre="Renaud - Mistral gagnant", duree="2:43"))
-        # self.liste_lecture.append(
-        #     Chanson(identifiant_video="i52bm1XUL0E", url_image="https://i.ytimg.com/vi/i52bm1XUL0E/hqdefault.jpg",
-        #             titre="Renaud - Morgane de toi", duree="6:14"))
-        # self.liste_lecture.append(
-        #     Chanson(identifiant_video="56hqrlQxMMI", url_image="https://i.ytimg.com/vi/56hqrlQxMMI/hq720.jpg",
-        #             titre="The Alan Parsons Project - Eye in the Sky", duree="4:38"))
-        # self.liste_lecture.append(
-        #     Chanson(identifiant_video="h0ffIJ7ZO4U", url_image="https://i.ytimg.com/vi/h0ffIJ7ZO4U/hq720.jpg",
-        #             titre="Dire Straits - Sultans Of Swing", duree="4:27"))
-        # self.liste_lecture.append(
-        #     Chanson(identifiant_video="xqnZPHo6qx4", url_image="https://i.ytimg.com/vi/xqnZPHo6qx4/hq720.jpg",
-        #             titre="TELEPHONE - Un autre monde", duree="4:34"))
-
         self.index_courant = 0
         self.__notificateur_evenement = notificateur_evenement
         self.progression_chanson_courante = None
         self.etat_lecture = EtatLecture.STOP
+
+    def ajouter_au_hasard(self, liste_chansons: List[Chanson]):
+        random.shuffle(liste_chansons)
+        self.liste_lecture = liste_chansons
+        self.index_courant = 0
 
     def ajouter_chanson(self, chanson):
         """
@@ -132,6 +119,7 @@ class ListeLectureModele:
                 logging.debug("Une chanson était en cours: arret de cette chanson pour pouvoir jouer la suivante")
                 lecteur_service.arreter()
             self.index_courant += 1
+            lecteur_service.preparer_chanson(self.liste_lecture[self.index_courant])
             self.__notificateur_evenement.notify(self.EVENEMENT_LECTURE_CHANGE_CHANSON)
             return self.jouer_chanson_courante(lecteur_service)
 

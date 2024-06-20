@@ -22,6 +22,10 @@ class AbstractLecteurService:
     def jouer(self, chanson: Chanson):
         pass
 
+    @abc.abstractmethod
+    def preparer_chanson(self, chanson: Chanson):
+        pass
+
     def pause(self):
         return self._vlc_service.pause()
 

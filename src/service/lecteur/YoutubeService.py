@@ -19,6 +19,7 @@ from service.lecteur.VlcService import VlcService
 
 
 class YoutubeService(AbstractLecteurService):
+
     __notificateur_evenement = inject.attr(Observable)
 
     def __init__(self, vlc_service: VlcService):
@@ -42,8 +43,25 @@ class YoutubeService(AbstractLecteurService):
             ))
         return retour
 
+    def preparer_chanson(self, chanson: Chanson):
+        if chanson.identifiant_video is None:
+            chanson_trouve = self.rechercher_chanson(chanson.titre, 1)
+            logging.debug(f"Complete info chanson: {chanson_trouve}")
+            chanson.identifiant_video = chanson_trouve[0].identifiant_video
+            chanson.url_image = chanson_trouve[0].url_image
+            chanson.duree = chanson_trouve[0].duree
+            chanson.set_url_stream()
+
     def jouer(self, chanson: Chanson):
         logging.debug(f"YDL, tentative de récupération chanson: {chanson}")
+        if chanson.identifiant_video is None:
+            chanson_trouve = self.rechercher_chanson(chanson.titre, 1)
+            logging.debug(f"Complete info chanson: {chanson_trouve}")
+            chanson.identifiant_video = chanson_trouve[0].identifiant_video
+            chanson.url_image = chanson_trouve[0].url_image
+            chanson.duree = chanson_trouve[0].duree
+            chanson.set_url_stream()
+
         ydl_opts = {'format': 'bestaudio'}
         with YoutubeDL(ydl_opts) as ydl:
             try:

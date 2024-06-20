@@ -18,9 +18,11 @@ from controleur.commun.PeutGererTouche import PeutGererTouche
 from controleur.composant.AudioControleur import AudioControleur
 from controleur.composant.LecteurControleur import LecteurControleur
 from controleur.composant.TitreControleur import TitreControleur
+from controleur.recherche.BibliothequeSpotifyControleur import BibliothequeSpotifyControleur
 from controleur.recherche.YoutubeRechercheControleur import YoutubeRechercheControleur
 from modele.audio.AudioModele import AudioModele
 from modele.bluetooth.BluetoothModele import BluetoothModele
+from modele.lecteur.BibliothequeSpotifyModele import BibliothequeSpotifyModele
 from modele.lecteur.JukeBoxModele import JukeBoxModele, Ecran
 from modele.lecteur.ListeLectureModele import ListeLectureModele
 from modele.wifi.WifiModele import WifiModele
@@ -28,6 +30,7 @@ from service.bluetooth.BluetoothService import BluetoothService
 from service.minitel.MinitelConstante import TOUCHE_ECHAP, TOUCHE_SHIFT_ENTREE
 from service.wifi.WifiService import WifiService
 from vue.bidule.Sablier import Sablier
+from vue.ecran.EcranBibliothequeSpotify import EcranBibliothequeSpotify
 from vue.ecran.EcranBluetooth import EcranBluetooth
 from vue.ecran.EcranDemarrage import EcranDemarrage
 from vue.ecran.EcranFinVue import EcranFinVue
@@ -82,6 +85,10 @@ class JukeBoxControleur(PeutGererTouche):
                 liste_lecture_controller = self.__mvc_createur.creation(AbstractControleur, EcranListeLecture, {})
                 liste_lecture_controller.lancer()
 
+            elif self.__jukebox_modele.ecran_demande == Ecran.ECRAN_BIBLIOTHEQUE_SPOTIFY:
+                bibliotheque_spotify_controller = self.__mvc_createur.creation(BibliothequeSpotifyControleur, EcranBibliothequeSpotify, {"spotify": BibliothequeSpotifyModele()})
+                bibliotheque_spotify_controller.lancer()
+
             else:
                 logging.error(f"Impossible de trouver l'écran demandé {self.__jukebox_modele.ecran_demande}")
                 self.__jukebox_modele.ecran_demande = Ecran.ECRAN_RECHERCHE
@@ -98,10 +105,14 @@ class JukeBoxControleur(PeutGererTouche):
         if touche.egale(SOMMAIRE):
             logging.info("Sommaire de la boucle principale du JukeBox")
             if self.__jukebox_modele.ecran_courant == Ecran.ECRAN_RECHERCHE:
+                self.__jukebox_modele.ecran_demande = Ecran.ECRAN_BIBLIOTHEQUE_SPOTIFY
+                return True
+            elif self.__jukebox_modele.ecran_courant == Ecran.ECRAN_BIBLIOTHEQUE_SPOTIFY:
                 self.__jukebox_modele.ecran_demande = Ecran.ECRAN_VISUALISATION
                 return True
-            self.__jukebox_modele.ecran_demande = Ecran.ECRAN_RECHERCHE
-            return True
+            else:
+                self.__jukebox_modele.ecran_demande = Ecran.ECRAN_RECHERCHE
+                return True
 
         if touche.egale(TOUCHE_SHIFT_ENTREE):
             logging.info("Shift+Sommaire de la boucle principale du JukeBox")

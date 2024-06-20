@@ -6,9 +6,12 @@ __version__ = "1.0.0"
 
 import base64
 import logging
+from typing import List
 
 import requests
 
+from modele.lecteur.BibliothequeSpotify import BibliothequeSpotify
+from modele.lecteur.Chanson import Chanson
 from service.lecteur.PeutSuggererUneChanson import PeutSuggererUneChanson
 
 
@@ -39,12 +42,19 @@ class SpotifyService(PeutSuggererUneChanson):
 
         return tracks["artists"][0]["name"] + " - " + tracks["name"]
 
-    def listes_lecture(self):
+    def liste_bibliotheque(self) -> List[BibliothequeSpotify]:
         resultat = self.__appel_spotify(f"https://api.spotify.com/v1/users/{self.__USER_ID}/playlists")
-        listes_lecture = []
+        listes_lecture: List[BibliothequeSpotify] = []
         for liste_lecture in resultat.json()["items"]:
-            listes_lecture.append(liste_lecture["name"] + ", " + str(liste_lecture["tracks"]["total"]))
+            listes_lecture.append(BibliothequeSpotify(liste_lecture["id"], liste_lecture["name"], liste_lecture["tracks"]["total"]))
         return listes_lecture
+
+    def liste_chansons_bibliotheque(self, bibliotheque: BibliothequeSpotify) -> List[Chanson]:
+        resultat = self.__appel_spotify(f"https://api.spotify.com/v1/playlists/{bibliotheque.identifiant}/tracks")
+        liste_chansons: List[Chanson] = []
+        for chanson in resultat.json()["items"]:
+            liste_chansons.append(Chanson(titre=f"{chanson['track']['name']} - {chanson['track']['artists'][0]['name']}"))
+        return liste_chansons
 
     def __appel_spotify(self, url):
         headers = {
