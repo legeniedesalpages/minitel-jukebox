@@ -21,5 +21,6 @@ class GeminiService(PeutSuggererUneChanson):
 
     def suggestion(self, titre_chanson: str) -> str:
         response = self.__model.generate_content(
-            "I like this song: " + titre_chanson + ". Can you suggest me a similar one, i just want the name of the song and the artist name in the response?")
+            "I like this song: " + titre_chanson + ". Can you suggest me a similar one, i just want the name of the song and the artist name in the response?",
+            request_options={"timeout": 15})
         return response.text

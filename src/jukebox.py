@@ -6,6 +6,7 @@ __version__ = "1.0.0"
 
 import configparser
 import logging
+import threading
 
 import inject
 from minitel.Minitel import Minitel
@@ -20,12 +21,13 @@ from service.lecteur.SpotifyService import SpotifyService
 from service.lecteur.VlcService import VlcService
 from service.lecteur.YoutubeService import YoutubeService
 from service.minitel.MinitelConfiguration import produire_minitel
+from service.ErreurService import ErreurService
 
 
 def jukebox_inject_config(binder):
     logging.info("Lecture du fichier de properties")
     config = configparser.ConfigParser()
-    config.read('ressources/jukebox.ini')
+    config.read('/home/pi/minitel/minitel-jukebox/ressources/jukebox.ini')
 
     logging.debug("Configuration de l'injecteur de dépendance")
     binder.bind(Minitel, produire_minitel())
@@ -55,11 +57,17 @@ def jukebox_inject_config(binder):
 
 if __name__ == '__main__':
     logging.basicConfig(
+        #filename='./minitel.log',
         level=logging.DEBUG,
         format="%(asctime)s [%(levelname)-5s] %(filename)s:%(lineno)d -> %(message)s"
     )
 
     logging.info("Lancement du Jukebox Minitel")
+    def erreur_tache_fond(args):
+        if isinstance(args.exc_value, Exception):
+            ErreurService.signaler(f"Tache de fond arretee: {args.thread.name}", args.exc_value)
+
+    threading.excepthook = erreur_tache_fond
     inject.configure(jukebox_inject_config)
 
     juke_box = JukeBoxControleur()

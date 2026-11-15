@@ -6,6 +6,7 @@ __version__ = "1.0.0"
 
 import abc
 import logging
+import textwrap
 from queue import Empty
 
 import inject
@@ -17,7 +18,10 @@ from controleur.commun.AbstractControleur import AbstractControleur
 from modele.bluetooth.BluetoothModele import BluetoothModele
 from modele.lecteur.ListeLectureModele import ListeLectureModele
 from modele.wifi.WifiModele import WifiModele
+from service.ErreurService import ErreurService
+from minitel.constantes import SOMMAIRE
 from service.minitel.MinitelExtension import MinitelExtension
+from service.minitel.MinitelConstante import TOUCHE_ECHAP, TOUCHE_SHIFT_ENTREE
 from vue.bidule.Sablier import Sablier
 from vue.commun.Affichable import Affichable
 from vue.composant.BarreAudioVue import BarreAudioVue
@@ -57,36 +61,69 @@ class AbstractEcran(Affichable):
 
     def afficher(self):
         logging.debug("Affichage vue")
-
+        self.__erreur_visible = False
         self.__barre_titre_vue = BarreTitreVue(self._get_titre_ecran(), self.__bluetooth_modele, self.__wifi_modele, self._get_callback_curseur)
-        self.__barre_titre_vue.afficher()
-
-        self._affichage_initial()
-
         self.__barre_lecture = BarreLectureVue(self.__liste_lecture_modele, self._get_callback_curseur)
-        self.__barre_lecture.afficher()
+        try:
+            try:
+                self.__barre_titre_vue.afficher()
+                self._affichage_initial()
+                self.__barre_lecture.afficher()
+            except Exception as erreur:
+                ErreurService.signaler(f"Ouverture de {self._get_titre_ecran()}", erreur)
+                self.__erreur_visible = True
 
-        while True:
-            touche = self.__recupere_sequence()
-            logging.debug(f"Touche {touche.valeurs}")
+            while True:
+                erreur = ErreurService.recuperer()
+                if erreur is not None:
+                    self.__afficher_erreur(erreur)
+                touche = self.__recupere_sequence()
+                if touche.longueur == 0:
+                    continue
+                try:
+                    # La navigation reste accessible meme si le contenu de l'ecran est inutilisable.
+                    if touche.egale(SOMMAIRE) or (self.__erreur_visible and (
+                            touche.egale(TOUCHE_ECHAP) or touche.egale(TOUCHE_SHIFT_ENTREE))):
+                        if self.__erreur_visible:
+                            quitter = any(
+                                controleur.gere_touche(touche)
+                                for controleur in self._controleur._controleur_pouvant_gerer_touche)
+                        else:
+                            quitter = self._controleur.gere_touche(touche)
+                        if quitter:
+                            break
+                    elif not self.__erreur_visible and not self._gere_touche(touche):
+                        if self._controleur.gere_touche(touche):
+                            break
+                except Exception as erreur:
+                    ErreurService.signaler(f"Action dans {self._get_titre_ecran()}", erreur)
+                    self.__erreur_visible = True
+        finally:
+            self.__fermer()
+            self._minitel.efface('vraimenttout')
 
-            if touche.longueur > 0:
-                if not self._gere_touche(touche):
-                    if self._controleur.gere_touche(touche):
-                        break
-
-        self._minitel.efface('vraimenttout')
-        self.__fermer()
+    def __afficher_erreur(self, message: str):
+        self.__erreur_visible = True
+        self._sablier.arreter()
+        self._minitel_extension.envoyer_ligne(posy=3, texte="Erreur - action interrompue", couleur="rouge")
+        for ligne in range(4, 12):
+            self._minitel_extension.envoyer_ligne(posy=ligne, texte="")
+        for index, ligne in enumerate(textwrap.wrap(message, width=39)[:8], start=4):
+            self._minitel_extension.envoyer_ligne(posy=index, texte=ligne, couleur="rouge")
+        self._minitel_extension.envoyer_ligne(
+            posy=13, texte="SOMMAIRE: passer a un autre ecran", couleur="jaune")
 
     def __fermer(self):
-        self.__barre_audio_vue.fermer()
-        self.__barre_titre_vue.fermer()
-        self.__barre_lecture.fermer()
-        self.fermer()
+        for fermeture in (self.__barre_audio_vue.fermer, self.__barre_titre_vue.fermer,
+                          self.__barre_lecture.fermer, self.fermer):
+            try:
+                fermeture()
+            except Exception as erreur:
+                ErreurService.signaler("Fermeture d'un composant de l'ecran", erreur)
 
     def __recupere_sequence(self) -> Sequence:
         try:
-            return self._minitel.recevoir_sequence(bloque=True, attente=None)
+            return self._minitel.recevoir_sequence(bloque=True, attente=0.2)
         except Empty:
             return Sequence()
 

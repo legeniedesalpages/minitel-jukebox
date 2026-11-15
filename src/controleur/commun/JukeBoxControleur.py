@@ -5,6 +5,7 @@ __date__ = "2022-08-28"
 __version__ = "1.0.0"
 
 import logging
+import textwrap
 from typing import Optional
 
 import inject
@@ -27,6 +28,9 @@ from modele.lecteur.JukeBoxModele import JukeBoxModele, Ecran
 from modele.lecteur.ListeLectureModele import ListeLectureModele
 from modele.wifi.WifiModele import WifiModele
 from service.bluetooth.BluetoothService import BluetoothService
+from service.ErreurService import ErreurService
+from minitel.Minitel import Minitel
+from service.minitel.MinitelExtension import MinitelExtension
 from service.minitel.MinitelConstante import TOUCHE_ECHAP, TOUCHE_SHIFT_ENTREE
 from service.wifi.WifiService import WifiService
 from vue.bidule.Sablier import Sablier
@@ -50,7 +54,11 @@ class JukeBoxControleur(PeutGererTouche):
 
         wifi_modele = WifiModele()
         wifi_service = WifiService()
-        wifi_modele.wifi = wifi_service.recuperer_wifi()
+        try:
+            wifi_modele.wifi = wifi_service.recuperer_wifi()
+        except Exception as erreur:
+            wifi_modele.wifi = None
+            ErreurService.signaler("Lecture de l'etat Wi-Fi au demarrage", erreur)
 
         bluetooth_modele = BluetoothModele()
 
@@ -68,33 +76,51 @@ class JukeBoxControleur(PeutGererTouche):
         EcranDemarrage().afficher()
 
         while not self.__jukebox_modele.est_termine():
-
-            if self.__jukebox_modele.ecran_demande == Ecran.ECRAN_BLUETOOTH:
-                bluetooth_controleur = self.__mvc_createur.creation(BluetoothControleur, EcranBluetooth, {})
-                bluetooth_controleur.lancer()
-
-            if self.__jukebox_modele.ecran_demande == Ecran.ECRAN_RECHERCHE:
-                recherche_controller = self.__mvc_createur.creation(YoutubeRechercheControleur, EcranRecherche, {})
-                recherche_controller.lancer()
-
-            elif self.__jukebox_modele.ecran_demande == Ecran.ECRAN_VISUALISATION:
-                visualisation_controller = self.__mvc_createur.creation(AbstractControleur, EcranVisualisation, {})
-                visualisation_controller.lancer()
-
-            elif self.__jukebox_modele.ecran_demande == Ecran.ECRAN_LISTE_LECTURE:
-                liste_lecture_controller = self.__mvc_createur.creation(AbstractControleur, EcranListeLecture, {})
-                liste_lecture_controller.lancer()
-
-            elif self.__jukebox_modele.ecran_demande == Ecran.ECRAN_BIBLIOTHEQUE_SPOTIFY:
-                bibliotheque_spotify_controller = self.__mvc_createur.creation(BibliothequeSpotifyControleur, EcranBibliothequeSpotify, {"spotify": BibliothequeSpotifyModele()})
-                bibliotheque_spotify_controller.lancer()
-
-            else:
-                logging.error(f"Impossible de trouver l'écran demandé {self.__jukebox_modele.ecran_demande}")
-                self.__jukebox_modele.ecran_demande = Ecran.ECRAN_RECHERCHE
+            ecran = self.__jukebox_modele.ecran_demande
+            try:
+                self.__lancer_ecran()
+            except Exception as erreur:
+                message = ErreurService.signaler(
+                    f"Chargement du mode {ecran.name if ecran else 'inconnu'}", erreur)
+                self.__jukebox_modele.ecran_courant = ecran
+                self.__ecran_erreur(message)
 
         EcranFinVue().afficher()
         self.fermer()
+
+    def __ecran_erreur(self, message=None):
+        minitel = inject.instance(Minitel)
+        extension = inject.instance(MinitelExtension)
+        minitel.efface('vraimenttout')
+        message = message or ErreurService.recuperer() or "Le mode demande n'a pas pu etre charge."
+        extension.envoyer_ligne(posy=3, texte="Erreur de chargement", couleur="rouge")
+        for index, ligne in enumerate(textwrap.wrap(message, width=39)[:8], start=4):
+            extension.envoyer_ligne(posy=index, texte=ligne, couleur="rouge")
+        extension.envoyer_ligne(posy=13, texte="SOMMAIRE: passer a un autre ecran", couleur="jaune")
+        while not self.__jukebox_modele.est_termine():
+            touche = minitel.recevoir_sequence(bloque=True, attente=None)
+            if self.gere_touche(touche):
+                break
+
+    def __lancer_ecran(self):
+        if self.__jukebox_modele.ecran_demande == Ecran.ECRAN_BLUETOOTH:
+            bluetooth_controleur = self.__mvc_createur.creation(BluetoothControleur, EcranBluetooth, {})
+            bluetooth_controleur.lancer()
+        elif self.__jukebox_modele.ecran_demande == Ecran.ECRAN_RECHERCHE:
+            recherche_controller = self.__mvc_createur.creation(YoutubeRechercheControleur, EcranRecherche, {})
+            recherche_controller.lancer()
+        elif self.__jukebox_modele.ecran_demande == Ecran.ECRAN_VISUALISATION:
+            visualisation_controller = self.__mvc_createur.creation(AbstractControleur, EcranVisualisation, {})
+            visualisation_controller.lancer()
+        elif self.__jukebox_modele.ecran_demande == Ecran.ECRAN_LISTE_LECTURE:
+            liste_lecture_controller = self.__mvc_createur.creation(AbstractControleur, EcranListeLecture, {})
+            liste_lecture_controller.lancer()
+        elif self.__jukebox_modele.ecran_demande == Ecran.ECRAN_BIBLIOTHEQUE_SPOTIFY:
+            bibliotheque_spotify_controller = self.__mvc_createur.creation(
+                BibliothequeSpotifyControleur, EcranBibliothequeSpotify, {"spotify": BibliothequeSpotifyModele()})
+            bibliotheque_spotify_controller.lancer()
+        else:
+            raise ValueError(f"Mode inconnu: {self.__jukebox_modele.ecran_demande}")
 
     def gere_touche(self, touche: Sequence) -> Optional[bool]:
         logging.debug(f"Gestion de la touche par le jukebox {touche.valeurs}")

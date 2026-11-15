@@ -22,6 +22,7 @@ def produire_notificateur_evenement() -> Observable:
     notificateur_evenement.add_event(BluetoothModele.EVENEMENT_LISTE_PERIPHERIQUE_BLUETOOTH_CHANGE)
     notificateur_evenement.add_event(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE)
     notificateur_evenement.add_event(BluetoothModele.EVENEMENT_SELECTION_DANS_LISTE_PERIPHERIQUE_CHANGE)
+    notificateur_evenement.add_event(BluetoothModele.EVENEMENT_STATUT_OPERATION_CHANGE)
 
     notificateur_evenement.add_event(WifiModele.EVENEMENT_WIFI_CHANGE)
 

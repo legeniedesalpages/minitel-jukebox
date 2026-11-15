@@ -5,7 +5,7 @@ __date__ = "2023-11-20"
 __version__ = "1.0.0"
 
 import logging
-from typing import Optional
+from typing import Optional, Tuple
 
 from minitel.Sequence import Sequence
 
@@ -35,6 +35,7 @@ class EcranBluetooth(AbstractEcran):
         self._notificateur_evenement.bind(BluetoothModele.EVENEMENT_LISTE_PERIPHERIQUE_BLUETOOTH_CHANGE, self._afficher_liste_peripherique)
         self._notificateur_evenement.bind(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE, self._afficher_peripherique_connecte)
         self._notificateur_evenement.bind(BluetoothModele.EVENEMENT_SELECTION_DANS_LISTE_PERIPHERIQUE_CHANGE, self._changer_selection)
+        self._notificateur_evenement.bind(BluetoothModele.EVENEMENT_STATUT_OPERATION_CHANGE, self._afficher_statut_operation)
 
         Etiquette.gauche(posy=3, texte="Connecté")
         Separateur.leger(posy=4)
@@ -47,11 +48,13 @@ class EcranBluetooth(AbstractEcran):
 
         # lance une première fois l'affichage pour ne pas avoir à attendre la première mise à jour
         self._afficher_peripherique_connecte(self.__bluetooth_modele.peripherique_connecte)
+        self._afficher_statut_operation(self.__bluetooth_modele.statut_operation)
 
     def fermer(self):
         self._notificateur_evenement.unbind(BluetoothModele.EVENEMENT_LISTE_PERIPHERIQUE_BLUETOOTH_CHANGE, self._afficher_liste_peripherique)
         self._notificateur_evenement.unbind(BluetoothModele.EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE, self._afficher_peripherique_connecte)
         self._notificateur_evenement.unbind(BluetoothModele.EVENEMENT_SELECTION_DANS_LISTE_PERIPHERIQUE_CHANGE, self._changer_selection)
+        self._notificateur_evenement.unbind(BluetoothModele.EVENEMENT_STATUT_OPERATION_CHANGE, self._afficher_statut_operation)
         self._sablier.arreter()
 
     def _afficher_peripherique_connecte(self, peripehrique: Optional[PeripheriqueBluetooth]):
@@ -64,6 +67,15 @@ class EcranBluetooth(AbstractEcran):
             texte = f" - {self.__bluetooth_modele.peripherique_connecte.nom}"
         self._minitel_extension.envoyer_ligne(posy=5, texte=texte, couleur="vert")
 
+        self._sablier.demarrer()
+
+    def _afficher_statut_operation(self, statut: Optional[Tuple[str, str]]):
+        self._sablier.arreter()
+        if statut is None:
+            self._minitel_extension.effacer_ligne(posy=6)
+        else:
+            message, couleur = statut
+            self._minitel_extension.envoyer_ligne(posy=6, texte=message, couleur=couleur)
         self._sablier.demarrer()
 
     def _changer_selection(self):

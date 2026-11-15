@@ -11,6 +11,7 @@ from modele.bluetooth.BluetoothModele import BluetoothModele
 from modele.wifi.WifiModele import WifiModele
 from service.bluetooth.BluetoothService import BluetoothService
 from service.wifi.WifiService import WifiService
+from service.ErreurService import ErreurService
 
 
 class TitreControleur:
@@ -31,13 +32,13 @@ class TitreControleur:
         while not self.__fin_raffraichissement:
             # todo : fixer le timeout
             if not self.__evenement_attente.wait(timeout=1000):
-                peripherique = self.__bluetooth_service.peripherique_connecte()
-                logging.debug(f"Recherche une mise à jour état bluetooth {peripherique}")
-                self.__bluetooth_modele.verification_changement_peripherique_apaire(peripherique)
-
-                wifi = self.__wifi_service.recuperer_wifi()
-                logging.debug(f"Recherche une mise à jour état wifi {wifi}")
-                self.__wifi_modele.verification_changement_wifi(wifi)
+                try:
+                    peripherique = self.__bluetooth_service.peripherique_connecte()
+                    self.__bluetooth_modele.verification_changement_peripherique_apaire(peripherique)
+                    wifi = self.__wifi_service.recuperer_wifi()
+                    self.__wifi_modele.verification_changement_wifi(wifi)
+                except Exception as erreur:
+                    ErreurService.signaler("Actualisation de l'etat Bluetooth et Wi-Fi", erreur)
 
     def arreter(self):
         logging.info("Arret du raffraichissement de l'état bluetooth et wifi")

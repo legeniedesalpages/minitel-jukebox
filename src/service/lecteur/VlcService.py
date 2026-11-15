@@ -8,6 +8,7 @@ import logging
 from typing import Optional
 
 import vlc
+from service.ErreurService import ErreurService
 
 from controleur.commun.PeutEcouterEvenementLecteur import PeutEcouterEvenementLecteur
 
@@ -32,8 +33,7 @@ class VlcService:
 
         logging.debug(f"Player VLC de l'url {self.__player}")
         if self.__player.play() != 0:
-            logging.error("Erreur lors de la lecture")
-            return
+            raise RuntimeError("VLC ne peut pas demarrer la lecture audio.")
 
     def arreter(self):
         if self.__event_manager is not None:
@@ -62,10 +62,16 @@ class VlcService:
             self.__player.set_position(self.__player.get_position() - 0.05)
 
     def _evenement_fin_chanson(self, event):
-        self.__lecture_controleur.evenement_fin_chanson()
+        try:
+            self.__lecture_controleur.evenement_fin_chanson()
+        except Exception as erreur:
+            ErreurService.signaler("Lecture automatique de la chanson suivante", erreur)
 
     def _evenement_progression_chanson(self, event):
-        self.__lecture_controleur.evenement_progression_chanson(progression=int(100 * self.__player.get_position()))
+        try:
+            self.__lecture_controleur.evenement_progression_chanson(progression=int(100 * self.__player.get_position()))
+        except Exception as erreur:
+            ErreurService.signaler("Mise a jour de la progression audio", erreur)
 
     def _evenement_erreur(self, event):
-        logging.error(f"Erreur lors de la lecture: {event}")
+        ErreurService.signaler("Lecture audio", RuntimeError("VLC ne peut pas lire cette chanson."))

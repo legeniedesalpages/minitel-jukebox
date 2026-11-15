@@ -18,6 +18,7 @@ from controleur.commun.PeutGererTouche import PeutGererTouche
 from modele.bluetooth.BluetoothModele import BluetoothModele
 from modele.lecteur.JukeBoxModele import JukeBoxModele, Ecran
 from service.bluetooth.BluetoothService import BluetoothService
+from service.ErreurService import ErreurService
 
 
 class BluetoothControleur(AbstractControleur):
@@ -48,6 +49,7 @@ class BluetoothControleur(AbstractControleur):
 
     def lancer(self):
 
+        self.__bluetooth_modele.mettre_a_jour_statut_operation(None)
         self.__bluetooth_modele.peripherique_connecte = self.__bluetooth_service.peripherique_connecte()
         if self.__bluetooth_modele.peripherique_connecte is not None:
             logging.info(
@@ -61,15 +63,14 @@ class BluetoothControleur(AbstractControleur):
         declencheur = threading.Thread(target=self._rafraichir_liste)
         declencheur.start()
 
-        self.__bluetooth_service.initialiser()
-        self.__bluetooth_service.scanner_peripheriques()
-
-        self._vue.afficher()
-
-        logging.debug("Descativation du raffraichissement de la liste des périphériques")
-        self.__fin_rafraichissement_liste_peripherique = True
-        logging.debug("Fin de l'affichage ecran bluetooth")
-        self.__bluetooth_service.arreter_scanner()
+        try:
+            self.__bluetooth_service.initialiser()
+            self.__bluetooth_service.scanner_peripheriques()
+            self._vue.afficher()
+        finally:
+            self.__fin_rafraichissement_liste_peripherique = True
+            self.__bluetooth_service.arreter_scanner()
+            declencheur.join(timeout=3)
 
     def _gere_touche(self, touche: Sequence) -> Optional[bool]:
         if touche.egale(SUITE):
@@ -101,8 +102,18 @@ class BluetoothControleur(AbstractControleur):
         self.__bluetooth_modele.navigation_liste(descend=False)
 
     def __associer_peripherique_selectionne(self):
-        if self.__bluetooth_modele.peripherique_selectionne is not None:
-            self.__bluetooth_service.associer_peripherique(self.__bluetooth_modele.peripherique_selectionne.adresse_mac)
+        peripherique = self.__bluetooth_modele.peripherique_selectionne
+        if peripherique is not None:
+            self.__bluetooth_modele.mettre_a_jour_statut_operation(
+                f"Connexion en cours: {peripherique.nom}", "jaune")
+            logging.info(
+                f"Tentative de connexion Bluetooth a {peripherique.nom} ({peripherique.adresse_mac})")
+            if self.__bluetooth_service.associer_peripherique(peripherique.adresse_mac):
+                self.__bluetooth_modele.mettre_a_jour_statut_operation(
+                    f"Connexion reussie: {peripherique.nom}", "vert")
+            else:
+                self.__bluetooth_modele.mettre_a_jour_statut_operation(
+                    f"Echec connexion: {peripherique.nom}", "rouge")
 
     def __deconnecte(self):
         if self.__bluetooth_modele.peripherique_connecte is not None:
@@ -111,8 +122,10 @@ class BluetoothControleur(AbstractControleur):
 
     def _rafraichir_liste(self):
         while not self.__fin_rafraichissement_liste_peripherique:
-            logging.debug("Rafraichissement de la liste des peripheriques")
-            nouveau_peripherique_connecte = self.__bluetooth_service.peripherique_connecte()
-            nouvelle_liste = self.__bluetooth_service.lister_peripheriques()
-            self.__bluetooth_modele.doit_rafraichir_liste(nouvelle_liste, nouveau_peripherique_connecte)
+            try:
+                nouveau_peripherique_connecte = self.__bluetooth_service.peripherique_connecte()
+                nouvelle_liste = self.__bluetooth_service.lister_peripheriques()
+                self.__bluetooth_modele.doit_rafraichir_liste(nouvelle_liste, nouveau_peripherique_connecte)
+            except Exception as erreur:
+                ErreurService.signaler("Actualisation des peripheriques Bluetooth", erreur)
             time.sleep(2)

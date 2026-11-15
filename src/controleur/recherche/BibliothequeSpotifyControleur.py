@@ -14,7 +14,7 @@ from controleur.commun.AbstractControleur import AbstractControleur
 from controleur.commun.PeutGererTouche import PeutGererTouche
 from modele.lecteur.BibliothequeSpotifyModele import BibliothequeSpotifyModele
 from modele.lecteur.ListeLectureModele import ListeLectureModele
-from service.lecteur.SpotifyService import SpotifyService
+from service.lecteur.SpotifyService import SpotifyAPIError, SpotifyService
 from service.lecteur.VlcService import VlcService
 from service.lecteur.YoutubeService import YoutubeService
 
@@ -36,8 +36,16 @@ class BibliothequeSpotifyControleur(AbstractControleur):
         self.__youtube_service = YoutubeService(self.__vlc_service)
 
     def lancer(self):
-        self.__bibliotheque_spotify_modele.liste_bibliotheque = self.__spotify_service.liste_bibliotheque()
-        logging.info(f"Liste des bibliothèques Spotify récupérée: {self.__bibliotheque_spotify_modele.liste_bibliotheque}")
+        try:
+            self.__bibliotheque_spotify_modele.liste_bibliotheque = self.__spotify_service.liste_bibliotheque()
+            self.__bibliotheque_spotify_modele.erreur = None
+            logging.info(
+                f"Liste des bibliothèques Spotify récupérée: "
+                f"{self.__bibliotheque_spotify_modele.liste_bibliotheque}")
+        except SpotifyAPIError as error:
+            self.__bibliotheque_spotify_modele.liste_bibliotheque = []
+            self.__bibliotheque_spotify_modele.erreur = str(error)
+            logging.error("Impossible de charger la bibliothèque Spotify: %s", error)
         super().lancer()
 
     def _gere_touche(self, touche: Sequence) -> Optional[bool]:

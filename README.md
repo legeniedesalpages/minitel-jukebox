@@ -34,6 +34,12 @@ apiKey =
 
 # Après démarrage du minitel
 
+Les erreurs de chargement, d'action et de lecture audio sont journalisées avec
+leur trace technique. Une erreur à l'écran laisse la touche SOMMAIRE disponible
+pour passer à un autre mode. Les erreurs des tâches de fond sont affichées sans
+attendre une nouvelle touche. Une panne de liaison avec le Minitel lui-même peut
+empêcher l'affichage ; consulter alors les journaux sur le Raspberry.
+
 Fct+Sommaire<br/>
 Fct+T V<br/>
 Fct+P 9<br/>

@@ -10,6 +10,7 @@ import subprocess
 from typing import List, Optional
 
 from modele.bluetooth.PeripheriqueBluetooth import PeripheriqueBluetooth
+from service.ErreurService import ErreurService
 
 
 class BluetoothService:
@@ -32,7 +33,10 @@ class BluetoothService:
 
     def arreter_scanner(self):
         logging.debug("Demande d'arrêt du scan des périphériques bluetooth")
-        self.__process_scan.terminate()
+        if self.__process_scan is not None:
+            self.__process_scan.terminate()
+            self.__process_scan.wait(timeout=3)
+            self.__process_scan = None
         process_scan_off = subprocess.Popen(["bluetoothctl", "scan", "off"], stdout=subprocess.PIPE)
         process_scan_off.kill()
         logging.info("Arrêt du scan des périphériques bluetooth")
@@ -48,12 +52,54 @@ class BluetoothService:
         BluetoothService.__operation(["bluetoothctl", "remove", adresse_mac], "Device has been removed")
 
     @staticmethod
-    def associer_peripherique(adresse_mac):
-        logging.debug(f"associer {adresse_mac}")
-        BluetoothService.__operation(["bluetoothctl", "pair", adresse_mac], "Pairing successful")
-        BluetoothService.__operation(["bluetoothctl", "trust", adresse_mac], "trust succeeded")
-        BluetoothService.__operation(["bluetoothctl", "connect", adresse_mac], "Connection successful")
-        logging.info(f"Association {adresse_mac} terminée")
+    def associer_peripherique(adresse_mac) -> bool:
+        logging.info(f"Demarrage de l'association Bluetooth avec {adresse_mac}")
+        informations = BluetoothService.__informations_peripherique(adresse_mac)
+
+        if informations is None or "Connected: yes" not in informations:
+            if informations is None or "Paired: yes" not in informations:
+                if not BluetoothService.__operation(
+                        ["bluetoothctl", "pair", adresse_mac], "Pairing successful"):
+                    logging.error(f"Echec de l'appairage Bluetooth avec {adresse_mac}")
+                    return False
+
+            if informations is None or "Trusted: yes" not in informations:
+                if not BluetoothService.__operation(
+                        ["bluetoothctl", "trust", adresse_mac], "trust succeeded"):
+                    logging.error(f"Echec de l'autorisation Bluetooth avec {adresse_mac}")
+                    return False
+
+            if not BluetoothService.__operation(
+                    ["bluetoothctl", "connect", adresse_mac], "Connection successful"):
+                logging.error(
+                    f"Connexion Bluetooth impossible avec {adresse_mac}. "
+                    "Verifiez que le peripherique est allume, en mode Bluetooth et a portee.")
+                return False
+
+        logging.info(f"Connexion Bluetooth reussie avec {adresse_mac}")
+        return True
+
+    @staticmethod
+    def __informations_peripherique(adresse_mac) -> Optional[str]:
+        try:
+            process = subprocess.run(
+                ["bluetoothctl", "info", adresse_mac],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=10,
+                check=False
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            logging.exception(f"Impossible de lire l'etat Bluetooth de {adresse_mac}")
+            return None
+
+        if process.returncode != 0:
+            logging.error(
+                f"Lecture de l'etat Bluetooth de {adresse_mac} echouee "
+                f"(code {process.returncode}): {process.stdout.strip()}")
+            return None
+        return process.stdout
 
     @staticmethod
     def peripherique_connecte() -> Optional[PeripheriqueBluetooth]:
@@ -107,12 +153,34 @@ class BluetoothService:
 
     @staticmethod
     def __operation(action: List[str], chaine_resultat_attendu: str) -> bool:
-        logging.debug(f"Execute {action}")
-        process = subprocess.Popen(action, stdout=subprocess.PIPE)
-        lignes_resultat = process.stdout.readlines()
-        if [i for i in lignes_resultat if str.encode(chaine_resultat_attendu) in i]:
-            logging.debug(f"Résultat {chaine_resultat_attendu} trouvé!")
+        logging.info(f"Execution de la commande Bluetooth: {' '.join(action)}")
+        try:
+            process = subprocess.run(
+                action,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=30,
+                check=False
+            )
+        except subprocess.TimeoutExpired:
+            ErreurService.signaler(
+                f"Commande Bluetooth {' '.join(action[1:])}",
+                RuntimeError("Le peripherique ne repond pas (delai de 30 secondes depasse)."))
+            return False
+        except OSError as erreur:
+            ErreurService.signaler(f"Commande Bluetooth {' '.join(action[1:])}", erreur)
+            return False
+
+        sortie = process.stdout.strip()
+        if process.returncode == 0 and chaine_resultat_attendu in sortie:
+            logging.info(f"Commande Bluetooth reussie: {' '.join(action)}")
             return True
-        logging.debug(f"Résultat attendu '{chaine_resultat_attendu}' non trouvé dans : {lignes_resultat}")
-        process.kill()
+        logging.error(
+            f"Echec de la commande Bluetooth {' '.join(action)} "
+            f"(code {process.returncode}); resultat attendu '{chaine_resultat_attendu}', "
+            f"sortie: {sortie or '(aucune sortie)'}")
+        lignes_erreur = [ligne for ligne in sortie.splitlines() if "Failed" in ligne or "Error" in ligne]
+        detail = " ".join(lignes_erreur) or f"Resultat attendu absent: {chaine_resultat_attendu}"
+        ErreurService.signaler(f"Commande Bluetooth {' '.join(action[1:])}", RuntimeError(detail))
         return False

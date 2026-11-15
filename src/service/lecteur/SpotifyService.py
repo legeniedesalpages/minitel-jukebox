@@ -15,6 +15,10 @@ from modele.lecteur.Chanson import Chanson
 from service.lecteur.PeutSuggererUneChanson import PeutSuggererUneChanson
 
 
+class SpotifyAPIError(Exception):
+    pass
+
+
 class SpotifyService(PeutSuggererUneChanson):
     __CLIENT_ID_SPOTIFY: str
     __CLIENT_SECRET_SPOTIFY: str
@@ -25,8 +29,13 @@ class SpotifyService(PeutSuggererUneChanson):
         self.__CLIENT_ID_SPOTIFY = client_id
         self.__CLIENT_SECRET_SPOTIFY = client_secret
         self.__USER_ID = user_id
-        self.__auth_token_spotify = self.__spotify_auht_token()
-        logging.debug(f"Jeton d'authentification spotify: {self.__auth_token_spotify}")
+        self.__erreur_initialisation = None
+        try:
+            self.__auth_token_spotify = self.__spotify_auht_token()
+        except SpotifyAPIError as error:
+            self.__auth_token_spotify = None
+            self.__erreur_initialisation = str(error)
+            logging.error("Initialisation Spotify impossible: %s", error)
 
     def suggestion(self, titre_chanson: str) -> str:
         logging.debug(f"Recherche du track id de la chanson: {titre_chanson}")
@@ -43,11 +52,43 @@ class SpotifyService(PeutSuggererUneChanson):
         return tracks["artists"][0]["name"] + " - " + tracks["name"]
 
     def liste_bibliotheque(self) -> List[BibliothequeSpotify]:
-        resultat = self.__appel_spotify(f"https://api.spotify.com/v1/users/{self.__USER_ID}/playlists")
-        listes_lecture: List[BibliothequeSpotify] = []
-        for liste_lecture in resultat.json()["items"]:
-            listes_lecture.append(BibliothequeSpotify(liste_lecture["id"], liste_lecture["name"], liste_lecture["tracks"]["total"]))
-        return listes_lecture
+        if self.__erreur_initialisation:
+            raise SpotifyAPIError(self.__erreur_initialisation)
+
+        url = f"https://api.spotify.com/v1/users/{self.__USER_ID}/playlists"
+        try:
+            resultat = self.__appel_spotify(url)
+            resultat.raise_for_status()
+            elements = resultat.json()["items"]
+            return [
+                BibliothequeSpotify(item["id"], item["name"], item["tracks"]["total"])
+                for item in elements
+            ]
+        except requests.HTTPError as error:
+            response = error.response
+            status = response.status_code if response is not None else "inconnu"
+            if status == 401:
+                message = "Authentification Spotify refusee (HTTP 401)."
+            elif status == 403:
+                message = "Acces a la bibliotheque Spotify refuse (HTTP 403)."
+            elif status == 404:
+                message = "Bibliotheque ou utilisateur Spotify introuvable (HTTP 404)."
+            elif status == 429:
+                message = "Limite Spotify atteinte (HTTP 429). Reessayez plus tard."
+            else:
+                message = f"Spotify a renvoye une erreur HTTP {status}."
+            details = response.text[:500] if response is not None else str(error)
+            logging.error("Echec de la requete Spotify (%s): %s", status, details)
+            raise SpotifyAPIError(message) from error
+        except requests.Timeout as error:
+            logging.exception("Delai depasse lors de la recuperation des bibliotheques Spotify")
+            raise SpotifyAPIError("Spotify ne repond pas (delai depasse).") from error
+        except (ValueError, KeyError, TypeError) as error:
+            logging.exception("Reponse invalide lors de la recuperation des bibliotheques Spotify")
+            raise SpotifyAPIError("Spotify a renvoye une reponse invalide.") from error
+        except requests.RequestException as error:
+            logging.exception("Erreur reseau lors de la recuperation des bibliotheques Spotify")
+            raise SpotifyAPIError("Spotify est inaccessible (erreur reseau).") from error
 
     def liste_chansons_bibliotheque(self, bibliotheque: BibliothequeSpotify) -> List[Chanson]:
         resultat = self.__appel_spotify(f"https://api.spotify.com/v1/playlists/{bibliotheque.identifiant}/tracks")
@@ -60,13 +101,17 @@ class SpotifyService(PeutSuggererUneChanson):
         return liste_chansons
 
     def __appel_spotify(self, url):
+        if self.__erreur_initialisation:
+            raise SpotifyAPIError(self.__erreur_initialisation)
         headers = {
             "Authorization": "Bearer " + self.__auth_token_spotify,
             "Accept": "application/json",
             "Content-Type": "application/json"
 
         }
-        return requests.get(url=url, headers=headers)
+        resultat = requests.get(url=url, headers=headers, timeout=10)
+        resultat.raise_for_status()
+        return resultat
 
     def __spotify_auht_token(self):
         url = "https://accounts.spotify.com/api/token"
@@ -80,10 +125,25 @@ class SpotifyService(PeutSuggererUneChanson):
         headers['Authorization'] = f"Basic {authorisation_base64}"
         data['grant_type'] = "client_credentials"
 
-        requete_auth_token_spotify = requests.post(url, headers=headers, data=data)
-        resultat = requete_auth_token_spotify.json()
-        auth_token = resultat['access_token']
-        print(resultat)
-        logging.debug(f"Token d'authorisation Spotify : {auth_token}")
+        try:
+            requete_auth_token_spotify = requests.post(url, headers=headers, data=data, timeout=10)
+            requete_auth_token_spotify.raise_for_status()
+            auth_token = requete_auth_token_spotify.json()["access_token"]
+        except requests.HTTPError as error:
+            response = error.response
+            status = response.status_code if response is not None else "inconnu"
+            details = response.text[:500] if response is not None else str(error)
+            logging.error("Echec de l'authentification Spotify (HTTP %s): %s", status, details)
+            raise SpotifyAPIError(f"Authentification Spotify impossible (HTTP {status}).") from error
+        except requests.Timeout as error:
+            logging.exception("Delai depasse lors de l'authentification Spotify")
+            raise SpotifyAPIError("Spotify ne repond pas (delai depasse).") from error
+        except (ValueError, KeyError, TypeError) as error:
+            logging.exception("Reponse invalide lors de l'authentification Spotify")
+            raise SpotifyAPIError("Spotify a renvoye une reponse d'authentification invalide.") from error
+        except requests.RequestException as error:
+            logging.exception("Erreur reseau lors de l'authentification Spotify")
+            raise SpotifyAPIError("Spotify est inaccessible (erreur reseau).") from error
 
+        logging.debug("Jeton d'authentification Spotify obtenu")
         return auth_token

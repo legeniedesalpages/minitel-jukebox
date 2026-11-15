@@ -62,12 +62,15 @@ class YoutubeService(AbstractLecteurService):
             chanson.duree = chanson_trouve[0].duree
             chanson.set_url_stream()
 
-        ydl_opts = {'format': 'bestaudio'}
+        ydl_opts = {
+            "socket_timeout": 15,
+            "retries": 1,
+            "format": "bestaudio[ext=m4a]/bestaudio/best",  # fallback progressif
+            "extractor_args": {
+                "youtube": {"player_client": ["android", "mweb", "web"]}
+            },
+            "cookiefile": "/home/pi/cookies.txt",  # ou firefox
+        }
         with YoutubeDL(ydl_opts) as ydl:
-            try:
-                info = ydl.extract_info(chanson.url_stream, download=False)
-                logging.info(f"Found from ydl: {info}")
-                self._vlc_service.jouer(info['url'])
-            except Exception as e:
-                logging.error(f"Erreur lors de la récupération de la chanson: {e}")
-                self.__notificateur_evenement.notify(JukeBoxModele.EVENEMENT_NOTIFICATION, str(e))
+            info = ydl.extract_info(chanson.url_stream, download=False)
+            self._vlc_service.jouer(info['url'])

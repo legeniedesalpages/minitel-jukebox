@@ -5,7 +5,7 @@ __date__ = "2023-11-20"
 __version__ = "1.0.0"
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import inject
 from pyobservable import Observable
@@ -17,18 +17,25 @@ class BluetoothModele:
     EVENEMENT_LISTE_PERIPHERIQUE_BLUETOOTH_CHANGE = "EvenementListePeripheriqueBluetoothChange"
     EVENEMENT_PERIPHERIQUE_BLUETOOTH_APAIRE_CHANGE = "EvenementPeripheriquBluetoothApaireChange"
     EVENEMENT_SELECTION_DANS_LISTE_PERIPHERIQUE_CHANGE = "EvenementSelectionDansListePeripheriquChange"
+    EVENEMENT_STATUT_OPERATION_CHANGE = "EvenementStatutOperationBluetoothChange"
 
     __notificateur_evenement = inject.attr(Observable)
 
     liste_peripherique: List[PeripheriqueBluetooth]
     peripherique_selectionne: Optional[PeripheriqueBluetooth]
     peripherique_connecte: Optional[PeripheriqueBluetooth]
+    statut_operation: Optional[Tuple[str, str]]
 
     def __init__(self):
         logging.debug("Initialisation du modèle Bluetooth")
         self.liste_peripherique = []
         self.peripherique_connecte = None
         self.peripherique_selectionne = None
+        self.statut_operation = None
+
+    def mettre_a_jour_statut_operation(self, message: Optional[str], couleur: str = "jaune"):
+        self.statut_operation = (message, couleur) if message else None
+        self.__notificateur_evenement.notify(self.EVENEMENT_STATUT_OPERATION_CHANGE, self.statut_operation)
 
     def verification_changement_peripherique_apaire(self,
                                                     nouveau_peripherique_connecte: Optional[PeripheriqueBluetooth]):

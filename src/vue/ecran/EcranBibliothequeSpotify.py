@@ -5,6 +5,7 @@ __date__ = "2024-06-18"
 __version__ = "1.0.0"
 
 import logging
+import textwrap
 
 import inject
 from minitel.Minitel import Minitel
@@ -45,7 +46,14 @@ class EcranBibliothequeSpotify(AbstractEcran):
                              hauteur_rendu=1, posy_debut=3, posy_fin=24)
 
         self.__minitel.curseur(False)
-        self.__liste.affichage()
+        if self.__bibliotheque_spotify_modele.erreur:
+            logging.info("Affichage de l'erreur Spotify: %s", self.__bibliotheque_spotify_modele.erreur)
+            lignes = textwrap.wrap(self.__bibliotheque_spotify_modele.erreur, width=39)
+            self.__minitel_extension.envoyer_ligne(posy=4, texte="Erreur Spotify", couleur="rouge")
+            for index, ligne in enumerate(lignes[:4], start=5):
+                self.__minitel_extension.envoyer_ligne(posy=index, texte=ligne, couleur="rouge")
+        else:
+            self.__liste.affichage()
 
     def _get_titre_ecran(self) -> str:
         return "Bibliothèque Spotify"
