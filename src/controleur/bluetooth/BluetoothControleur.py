@@ -75,6 +75,7 @@ class BluetoothControleur(AbstractControleur):
     def _gere_touche(self, touche: Sequence) -> Optional[bool]:
         if touche.egale(SUITE):
             logging.debug("Fin de la configuration Bluetooth")
+            self.__jukebox_modele.ecran_demande = Ecran.ECRAN_RECHERCHE
             return True
         if touche.egale(SOMMAIRE):
             logging.debug("Sommaire ecran bluetooth: on ne sort pas")

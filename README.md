@@ -34,6 +34,9 @@ apiKey =
 
 # Après démarrage du minitel
 
+Sur l'ecran de selection Bluetooth, SUITE ouvre la recherche de chanson,
+meme sans peripherique connecte. Saisir un titre dans le champ "Chanson".
+
 Les erreurs de chargement, d'action et de lecture audio sont journalisées avec
 leur trace technique. Une erreur à l'écran laisse la touche SOMMAIRE disponible
 pour passer à un autre mode. Les erreurs des tâches de fond sont affichées sans

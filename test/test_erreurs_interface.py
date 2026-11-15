@@ -3,7 +3,8 @@ from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import Mock, patch
 
 from minitel.Sequence import Sequence
-from minitel.constantes import SOMMAIRE
+from minitel.constantes import SOMMAIRE, SUITE
+from controleur.bluetooth.BluetoothControleur import BluetoothControleur
 from controleur.commun.JukeBoxControleur import JukeBoxControleur
 from modele.lecteur.JukeBoxModele import JukeBoxModele, Ecran
 
@@ -65,6 +66,15 @@ class ErreursInterfaceTest(unittest.TestCase):
 
     def test_navigation_normale_preservee(self):
         self.tester_ecran()
+
+    def test_suite_bluetooth_ouvre_la_recherche(self):
+        modele = JukeBoxModele()
+        controleur = BluetoothControleur({}, {"jukebox": modele, "bluetooth": Mock()})
+        self.assertEqual(Ecran.ECRAN_BLUETOOTH, modele.ecran_courant)
+        self.assertIsNone(modele.ecran_demande)
+
+        self.assertTrue(controleur.gere_touche(Sequence(SUITE)))
+        self.assertEqual(Ecran.ECRAN_RECHERCHE, modele.ecran_demande)
 
     def test_erreur_ouverture_ne_bloque_pas_sommaire(self):
         self.tester_ecran(erreur_initiale=True)
